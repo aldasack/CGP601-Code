@@ -10,22 +10,21 @@
 ////////////////////////////////
 
 #include "Defs.h"
-#include "RigidBody.h"
+#include "GameObject.h"
 
-class Sphere : public RigidBody
+class Sphere : public GameObject
 {
 public:
-	//Sphere();
+	Sphere();
 	Sphere(const Math::Vector3 position);
+	Sphere(const Math::Vector3 position, const float radius);
 	~Sphere();
-	//void Initialize(float radius, float r, float g, float b, float posX, float posY, float posZ);
-	//void Initialize();
+
 	void Draw();
-	void Update(float dt);
+	void SetRadius(const float radius);
 
 private:
 	float m_radius;
-	float m_color[3];
 	const int m_segments = 25;
 };
 

@@ -1,14 +1,10 @@
-#include "RigidBody.h"
-#include <iostream>
-#include <glut.h>
-
-//bool b = false;
-
 ////////////////////////////////
 // Name: RigidBody.cpp		  //
 // Author: Alexander Kocourek //
 // Date: 06/02/2017			  //
 ////////////////////////////////
+
+#include "RigidBody.h"
 
 float time = 0.0f;
 float threshold = 0.1f;

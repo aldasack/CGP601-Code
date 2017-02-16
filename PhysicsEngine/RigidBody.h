@@ -9,6 +9,8 @@
 // Date: 06/02/2017			  //
 ////////////////////////////////
 
+#include <iostream>
+
 #include "Defs.h"
 
 class RigidBody
@@ -18,9 +20,8 @@ public:
 	//RigidBody(const Math::Vector3 position);
 	~RigidBody();
 	void Update(float dt);
-	Math::Vector3 GetPosition() const;
 
-protected:
+	Math::Vector3 GetPosition() const;
 	void SetPosition(const Math::Vector3 position);
 
 private:

@@ -52,4 +52,9 @@ namespace Collider
 	};
 }
 
+//class RigidBody;
+//class GameManager;
+//class Sphere;
+//class GameObject;
+
 #endif // !_DEFS_H
