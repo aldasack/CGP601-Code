@@ -9,24 +9,36 @@
 Sphere::Sphere() : GameObject()
 {
 	m_radius = 0.5f;
+	m_collider.position = m_pRigidbody->GetPosition();
+	m_collider.radius = m_radius;
 }
 
-Sphere::Sphere(const Math::Vector3 position) : GameObject(position)
+Sphere::Sphere(const glm::vec3 position) : GameObject(position)
 {
 	m_radius = 0.5f;
+	m_collider.position = position;
+	m_collider.radius = m_radius;
 }
 
-Sphere::Sphere(const Math::Vector3 position, const float radius) : GameObject(position)
+Sphere::Sphere(const glm::vec3 position, const float radius) : GameObject(position)
 {
 	m_radius = radius;
+	m_collider.position = m_pRigidbody->GetPosition();
+	m_collider.radius = m_radius;
 }
 
 Sphere::~Sphere(){}
 
+void Sphere::Shutdown()
+{
+	shutdown();
+}
+
 void Sphere::Draw()
 {
-	GameObject::Draw();
+	prepareDraw();
 	glutSolidSphere(m_radius, m_segments, m_segments);
+	glPopMatrix();
 }
 
 void Sphere::SetRadius(const float radius)

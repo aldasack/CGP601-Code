@@ -17,22 +17,33 @@ class RigidBody
 {
 public:
 	RigidBody();
-	//RigidBody(const Math::Vector3 position);
+	//RigidBody(const glm::vec3 position);
 	~RigidBody();
 	void Update(float dt);
 
-	Math::Vector3 GetPosition() const;
-	void SetPosition(const Math::Vector3 position);
+	glm::vec3 GetPosition() const;
+	void SetPosition(const glm::vec3 position);
+	//void SetForce(const glm::vec3 force);
+
+	glm::vec3 GetVelocity() const;
+	void SetVelocity(const glm::vec3 velocity);
+	float GetMasss() const;
+
+	// Adds a force to the rigidbody and calculates the resulting force of all applied forces
+	void AddForce(const glm::vec3 force);
 
 private:
-	Math::Vector3 m_position;
-	Math::Vector3 m_velocity;
-	Math::Vector3 m_acceleration;
+	glm::vec3 m_position;
+	glm::vec3 m_velocity;
+	glm::vec3 m_acceleration;
+	glm::vec3 m_force;
 
 	float m_mass;
-	Math::Vector3 m_centerOfMass;
+	glm::vec3 m_centerOfMass;
 
-	Collider::SphereCollider m_collider;
+	//Collider::SphereCollider m_collider;
+
+	void resetForce();
 };
 
 #endif // !_RIGIDBODY_H

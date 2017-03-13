@@ -13,28 +13,25 @@
 #include <glut.h>
 #include <string>
 
+#include "glm\glm.hpp"
+
 namespace Constants
 {
 	const float G = 9.81f;
 	const float Pi = 4.0f * atan(1.0f);
 }
 
-namespace Time
-{
-	static float TotalTime = 0.0f; // time in seconds
-}
+//namespace Time
+//{
+//	// Time since application start, currently not working
+//	float TotalTime = 0.0f;
+//}
 
 namespace Math
 {
 	struct Vector3
 	{
 		float x, y, z;
-		/*void Zero()
-		{
-			x = 0.0f;
-			y = 0.0f;
-			z = 0.0f;
-		}*/
 	};
 
 	struct Vector2
@@ -47,9 +44,17 @@ namespace Collider
 {
 	struct SphereCollider
 	{
-		Math::Vector3 position;
+		glm::vec3 position;
 		float radius;
 	};
+}
+
+namespace Colors
+{
+	const glm::vec3 White = { 1.0f, 1.0f, 1.0f };
+	const glm::vec3 Black = { 0.0f, 0.0f, 0.0f };
+	const glm::vec3 Red = { 1.0f, 0.0f, 0.0f };
+	const glm::vec3 Blue = { 0.0f, 0.0f, 1.0f };
 }
 
 //class RigidBody;

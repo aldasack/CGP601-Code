@@ -66,9 +66,6 @@ int main(void)
 	glutMainLoop();
 	
 	
-	
-	
-	
 	//int exitCode = gameManager->Run();
 
 	gameManager->Shutdown();

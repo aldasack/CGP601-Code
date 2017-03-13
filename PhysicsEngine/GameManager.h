@@ -30,6 +30,9 @@ public:
 	void Exit(int);
 
 private:
+	const unsigned int m_windowHeight = 768;
+	const unsigned int m_windowWidth = 1024;
+	
 	int m_exitCode;
 	bool m_isRunning;
 	bool m_isRendering;
@@ -37,8 +40,6 @@ private:
 	bool m_keyState[256];
 	float m_deltaTime;
 	float m_targetFrameTime;
-	unsigned int m_windowHeight;
-	unsigned int m_windowWidth;
 
 	std::chrono::high_resolution_clock g_timer;
 	using ms = std::chrono::duration<float, std::milli>;
@@ -54,8 +55,11 @@ private:
 
 	void clearKeyState();
 	void draw();
-	void drawText(Math::Vector2 position, Math::Vector3 color, std::string text);
+	void drawPlane();
+	void drawText(glm::vec2 position, glm::vec3 color, std::string text);
 	void update();
+	float collisionDetection(const Collider::SphereCollider &col1, const Collider::SphereCollider &col2);
+	void collisionResponse(GameObject& g1, GameObject& g2, float intersection);
 };
 
 #endif // !_GAMEMANAGER_H

@@ -9,58 +9,85 @@
 GameObject::GameObject()
 {
 	m_color = { 1.0f, 1.0f, 1.0f };
-	m_rigidbody = new RigidBody();
+	m_pRigidbody = new RigidBody();
 }
 
-GameObject::GameObject(Math::Vector3 position) : GameObject()
+GameObject::GameObject(glm::vec3 position) : GameObject()
 {
-	m_rigidbody->SetPosition(position);
+	m_pRigidbody->SetPosition(position);
 }
 
 GameObject::~GameObject(){}
 
-void GameObject::Shutdown()
-{
-	// shoutdown()
-	m_rigidbody = nullptr;
-	delete m_rigidbody;
-}
-
-void GameObject::Draw()
-{
-	glColor3f(m_color.x, m_color.y, m_color.z);
-	
-	Math::Vector3 pos = m_rigidbody->GetPosition();
-	glLoadIdentity();
-	glTranslatef(pos.x, pos.y, pos.z);
-	glutSolidSphere(0.5f, 25, 25);
-}
-
 void GameObject::Update(float dt)
 {
-	m_rigidbody->Update(dt);
+	//m_color = Colors::White;
+	m_pRigidbody->Update(dt);
+	m_collider.position = m_pRigidbody->GetPosition();
 }
 
-void GameObject::SetPosition(const Math::Vector3 position)
+void GameObject::SetPosition(const glm::vec3 position)
 {
-	m_rigidbody->SetPosition(position);
+	m_pRigidbody->SetPosition(position);
 }
 
-void GameObject::SetColor(const Math::Vector3 color)
+void GameObject::SetVelocity(const glm::vec3 velocity)
+{
+	m_pRigidbody->SetVelocity(velocity);
+}
+
+void GameObject::SetColor(const glm::vec3 color)
 {
 	m_color = color;
 }
 
-Math::Vector3 GameObject::GetPosition() const
+glm::vec3 GameObject::GetPosition() const
 {
-	return m_rigidbody->GetPosition();
+	return m_pRigidbody->GetPosition();
 }
 
-//Math::Vector3 GameObject::GetAcceleration() const
+glm::vec3 GameObject::GetVelocity() const
+{
+	return m_pRigidbody->GetVelocity();
+}
+
+float GameObject::GetMass() const
+{
+	return m_pRigidbody->GetMasss();
+}
+
+Collider::SphereCollider GameObject::GetCollider() const
+{
+	return m_collider;
+}
+
+//glm::vec3 GameObject::GetAcceleration() const
 //{
 //	return;
 //}
-//Math::Vector3 GameObject::GetVelocity() const
+//glm::vec3 GameObject::GetVelocity() const
 //{
 //
 //}
+
+void GameObject::AddForce(const glm::vec3 force)
+{
+	m_pRigidbody->AddForce(force);
+}
+
+void GameObject::shutdown()
+{
+	// m_pRigidbody->Shoutdown()
+	m_pRigidbody = nullptr;
+	delete m_pRigidbody;
+}
+
+void GameObject::prepareDraw()
+{
+	glPushMatrix();
+	glColor3f(m_color.x, m_color.y, m_color.z);
+
+	glm::vec3 pos = m_pRigidbody->GetPosition();
+	//glLoadIdentity();
+	glTranslatef(pos.x, pos.y, pos.z);
+}

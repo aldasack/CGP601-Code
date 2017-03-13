@@ -16,11 +16,12 @@ class Sphere : public GameObject
 {
 public:
 	Sphere();
-	Sphere(const Math::Vector3 position);
-	Sphere(const Math::Vector3 position, const float radius);
+	Sphere(const glm::vec3 position);
+	Sphere(const glm::vec3 position, const float radius);
 	~Sphere();
+	void Shutdown() override;
 
-	void Draw();
+	void Draw() override;
 	void SetRadius(const float radius);
 
 private:

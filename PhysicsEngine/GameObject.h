@@ -16,23 +16,33 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(Math::Vector3 position);
+	GameObject(glm::vec3 position);
 	~GameObject();
-	void Shutdown();
-	void Draw();
+	virtual void Shutdown() = 0;
+	virtual void Draw() = 0;
 	void Update(float dt);
 
-	void SetPosition(const Math::Vector3 position);
-	void SetScale(const Math::Vector3 scale);
-	void SetColor(const Math::Vector3 color);
+	void SetPosition(const glm::vec3 position);
+	void SetVelocity(const glm::vec3 velocity);
+	void SetScale(const glm::vec3 scale);
+	void SetColor(const glm::vec3 color);
 
-	Math::Vector3 GetPosition() const;
-	Math::Vector3 GetAcceleration() const;
-	Math::Vector3 GetVelocity() const;
+	glm::vec3 GetPosition() const;
+	glm::vec3 GetAcceleration() const;
+	glm::vec3 GetVelocity() const;
+	float GetMass() const;
+	Collider::SphereCollider GetCollider() const;
+
+	void AddForce(const glm::vec3 force);
+
+protected:
+	void shutdown();
+	void prepareDraw();
+	Collider::SphereCollider m_collider;
+	RigidBody* m_pRigidbody;
 
 private:
-	RigidBody* m_rigidbody;
-	Math::Vector3 m_color;
+	glm::vec3 m_color;
 };
 
 #endif // ! _OBJECT_H
