@@ -33,6 +33,12 @@ public:
 	float GetMass() const;
 	Collider::SphereCollider GetCollider() const;
 
+	bool IsStatic() const;
+	void IsStatic(const bool isStatic);
+
+	bool UseGravity() const;
+	void UseGravity(const bool useGravity);
+
 	void AddForce(const glm::vec3 force);
 
 protected:

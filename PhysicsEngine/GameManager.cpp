@@ -81,9 +81,11 @@ void GameManager::InitEngine()
 	pos2.x = 1.0f;
 	//m_gameObjects.push_back(new Sphere(pos2));
 
-	//m_gameObjects[0]->SetVelocity(glm::vec3(-2.0f, 0.0f, -0.0f));
-	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, 2.0f));
+	m_gameObjects[0]->SetVelocity(glm::vec3(-2.0f, 0.0f, -0.0f));
+	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -2.0f));
 	m_gameObjects[0]->SetColor(Colors::Blue);
+	//m_gameObjects[0]->IsStatic(true);
+	//m_gameObjects[1]->UseGravity(false);
 
 	glm::vec3 color;
 	for (int i = 0; i < 9; i++)
@@ -153,7 +155,9 @@ void GameManager::draw()
 	// set camera / view matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	// looking from above
 	//gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	gluLookAt(0.0, 2.5, 5.0, 0.0, 2.5, 1.0, 0.0, 1.0, 0.0);
 
 	/*glViewport(0.0f, 0.0f, m_windowWidth, m_windowHeight);
 	glMatrixMode(GL_PROJECTION);

@@ -61,6 +61,26 @@ Collider::SphereCollider GameObject::GetCollider() const
 	return m_collider;
 }
 
+bool GameObject::IsStatic() const
+{
+	return m_pRigidbody->IsStatic();
+}
+
+void GameObject::IsStatic(const bool isStatic)
+{
+	m_pRigidbody->IsStatic(isStatic);
+}
+
+bool GameObject::UseGravity() const
+{
+	return m_pRigidbody->UseGravity();
+}
+
+void GameObject::UseGravity(const bool useGravity)
+{
+	m_pRigidbody->UseGravity(useGravity);
+}
+
 //glm::vec3 GameObject::GetAcceleration() const
 //{
 //	return;

@@ -31,6 +31,9 @@ RigidBody::RigidBody()
 
 	m_mass = 1.0f;
 
+	m_isStatic = false;
+	m_useGravity = true;
+
 	/*m_collider.position = m_position;
 	m_collider.radius = 0.5f;*/
 }
@@ -39,12 +42,19 @@ RigidBody::~RigidBody(){}
 
 void RigidBody::Update(float dt)
 {
+	// if object is static
+	if (m_isStatic)
+		return;
+
 	// 1. Step: Calculate acceleration (a). a = F/m
 	m_acceleration.x = m_force.x / m_mass;
 	m_acceleration.y = m_force.y / m_mass;
 	m_acceleration.z = m_force.z / m_mass;
-	// adding acceleration of gravity. Because this acceleration is constant, it is unecessary to calculate the Force first
-	m_acceleration.y += Constants::G * -1.0f; // acceleration goes down on the y-axis and needs to be negative.
+	if (m_useGravity)
+	{
+		// adding acceleration of gravity. Because this acceleration is constant, it is unecessary to calculate the Force first
+		m_acceleration.y += Constants::G * -1.0f; // acceleration goes down on the y-axis and needs to be negative.
+	}
 
 	// 2. Step: Calculate velocity (v) in this moment.
 	m_velocity.x += m_acceleration.x * dt;
@@ -110,6 +120,26 @@ void RigidBody::SetVelocity(const glm::vec3 velocity)
 float RigidBody::GetMasss() const
 {
 	return m_mass;
+}
+
+bool RigidBody::IsStatic() const
+{
+	return m_isStatic;
+}
+
+void RigidBody::IsStatic(const bool isStatic)
+{
+	m_isStatic = isStatic;
+}
+
+bool RigidBody::UseGravity() const
+{
+	return m_useGravity;
+}
+
+void RigidBody::UseGravity(const bool useGravity)
+{
+	m_useGravity = useGravity;
 }
 
 //void RigidBody::SetForce(const glm::vec3 force)

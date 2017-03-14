@@ -27,7 +27,14 @@ public:
 
 	glm::vec3 GetVelocity() const;
 	void SetVelocity(const glm::vec3 velocity);
+	
 	float GetMasss() const;
+
+	bool IsStatic() const;
+	void IsStatic(const bool isStatic);
+
+	bool UseGravity() const;
+	void UseGravity(const bool useGravity);
 
 	// Adds a force to the rigidbody and calculates the resulting force of all applied forces
 	void AddForce(const glm::vec3 force);
@@ -40,6 +47,9 @@ private:
 
 	float m_mass;
 	glm::vec3 m_centerOfMass;
+
+	bool m_isStatic;
+	bool m_useGravity;
 
 	//Collider::SphereCollider m_collider;
 
