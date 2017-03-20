@@ -39,7 +39,7 @@ void Reshape(int width, int height)
 	glViewport(0.0f, 0.0f, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(75.0, (GLdouble)width / (GLdouble)height, 1.0, 100.0);
+	gluPerspective(75.0, (GLdouble)width / (GLdouble)height, 1.0, 1000.0);
 }
 
 int main(void)
@@ -60,7 +60,7 @@ int main(void)
 	glutReshapeFunc(Reshape);
 	glutKeyboardFunc(KeyboardHandle);
 
-	gameManager->InitEngine();
+	gameManager->InitScene();
 
 	// Main Loop
 	glutMainLoop();

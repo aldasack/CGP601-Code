@@ -17,6 +17,11 @@ GameObject::GameObject(glm::vec3 position) : GameObject()
 	m_pRigidbody->SetPosition(position);
 }
 
+GameObject::GameObject(glm::vec3 position, glm::vec3 rotation) : GameObject(position)
+{
+	m_pRigidbody->SetRotation(rotation);
+}
+
 GameObject::~GameObject(){}
 
 void GameObject::Update(float dt)
@@ -26,17 +31,22 @@ void GameObject::Update(float dt)
 	m_collider.position = m_pRigidbody->GetPosition();
 }
 
-void GameObject::SetPosition(const glm::vec3 position)
+void GameObject::SetPosition(const glm::vec3& position)
 {
 	m_pRigidbody->SetPosition(position);
 }
 
-void GameObject::SetVelocity(const glm::vec3 velocity)
+void GameObject::SetRotation(const glm::vec3& rotation)
+{
+	m_pRigidbody->SetRotation(rotation);
+}
+
+void GameObject::SetVelocity(const glm::vec3& velocity)
 {
 	m_pRigidbody->SetVelocity(velocity);
 }
 
-void GameObject::SetColor(const glm::vec3 color)
+void GameObject::SetColor(const glm::vec3& color)
 {
 	m_color = color;
 }
@@ -53,10 +63,10 @@ glm::vec3 GameObject::GetVelocity() const
 
 float GameObject::GetMass() const
 {
-	return m_pRigidbody->GetMasss();
+	return m_pRigidbody->GetMass();
 }
 
-Collider::SphereCollider GameObject::GetCollider() const
+Collision::SphereCollider GameObject::GetCollider() const
 {
 	return m_collider;
 }
@@ -90,9 +100,19 @@ void GameObject::UseGravity(const bool useGravity)
 //
 //}
 
-void GameObject::AddForce(const glm::vec3 force)
+void GameObject::AddForce(const glm::vec3& force)
 {
 	m_pRigidbody->AddForce(force);
+}
+
+void GameObject::AddForce(const glm::vec3& force, const glm::vec3& position)
+{
+	m_pRigidbody->AddForce(force, position);
+}
+
+void GameObject::AddTorque(const glm::vec3& torque)
+{
+	m_pRigidbody->AddTorque(torque);
 }
 
 void GameObject::shutdown()
@@ -108,6 +128,14 @@ void GameObject::prepareDraw()
 	glColor3f(m_color.x, m_color.y, m_color.z);
 
 	glm::vec3 pos = m_pRigidbody->GetPosition();
-	//glLoadIdentity();
+	glm::vec4 rotation = m_pRigidbody->GetAxisAngleRotation();
+
+	// check if axis is normalized
+	// don't think it's required!!!!!
+	glm::vec3 rr = glm::vec3(rotation.x, rotation.y, rotation.z);
+	float ll = glm::length(rr);
+	assert(abs(ll - 1) < 0.0001);
+	
 	glTranslatef(pos.x, pos.y, pos.z);
+	glRotatef(rotation.w * Constants::Rad2Deg, rotation.x, rotation.y, rotation.z);
 }

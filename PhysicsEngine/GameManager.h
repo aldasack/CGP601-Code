@@ -15,6 +15,7 @@
 
 #include "Defs.h"
 #include "Sphere.h";
+#include "Plane.h"
 #include "GameObject.h"
 
 class GameManager
@@ -24,7 +25,7 @@ public:
 	~GameManager();
 	void Shutdown();
 	void Loop();
-	void InitEngine();
+	void InitScene();
 	void KeyboardHandle(unsigned char key, int x, int y);
 	//int Run();
 	void Exit(int);
@@ -58,7 +59,7 @@ private:
 	void drawPlane();
 	void drawText(glm::vec2 position, glm::vec3 color, std::string text);
 	void update();
-	float collisionDetection(const Collider::SphereCollider &col1, const Collider::SphereCollider &col2);
+	float collisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
 	void collisionResponse(GameObject& g1, GameObject& g2, float intersection);
 };
 

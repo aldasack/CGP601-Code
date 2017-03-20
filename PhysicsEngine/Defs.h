@@ -12,13 +12,20 @@
 #include <cmath>
 #include <glut.h>
 #include <string>
+#include <exception>
 
 #include "glm\glm.hpp"
+#include "glm\gtc\quaternion.hpp"
+
+// all angles are represented in radians
+#define GLM_FORCE_RADIANS
 
 namespace Constants
 {
 	const float G = 9.81f;
 	const float Pi = 4.0f * atan(1.0f);
+	const float Deg2Rad = Pi / 180.0f;
+	const float Rad2Deg = 180.0f / Pi;
 }
 
 //namespace Time
@@ -27,22 +34,29 @@ namespace Constants
 //	float TotalTime = 0.0f;
 //}
 
-namespace Math
+//namespace Math
+//{
+//	struct Vector3
+//	{
+//		float x, y, z;
+//	};
+//
+//	struct Vector2
+//	{
+//		float x, y;
+//	};
+//}
+
+namespace Collision
 {
-	struct Vector3
+	enum class ColliderType { Sphere, Box, Plane, Mesh };
+
+	struct Collider
 	{
-		float x, y, z;
+		ColliderType colliderType;
 	};
 
-	struct Vector2
-	{
-		float x, y;
-	};
-}
-
-namespace Collider
-{
-	struct SphereCollider
+	struct SphereCollider : Collider
 	{
 		glm::vec3 position;
 		float radius;

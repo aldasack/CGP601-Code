@@ -63,42 +63,39 @@ void GameManager::Loop()
 	}
 }
 
-void GameManager::InitEngine()
+void GameManager::InitScene()
 {
 	srand(static_cast<unsigned>(time(0)));
 	glm::vec3 pos1;
 	pos1.x = 0.5f;
-	pos1.y = 5.5f;
-	pos1.z = -5.0;
+	pos1.y = -0.5f;
+	pos1.z = 5.0;
 
 	glm::vec3 pos2;
 	pos2.x = 0.0f;
-	pos2.y = 5.5f;
+	pos2.y = -0.5f;
 	pos2.z = 0.0;
 
+	m_gameObjects.push_back(new Plane());
 	m_gameObjects.push_back(new Sphere(pos1));
-	m_gameObjects.push_back(new Sphere(pos2));
-	pos2.x = 1.0f;
-	//m_gameObjects.push_back(new Sphere(pos2));
 
-	m_gameObjects[0]->SetVelocity(glm::vec3(-2.0f, 0.0f, -0.0f));
-	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -2.0f));
-	m_gameObjects[0]->SetColor(Colors::Blue);
-	//m_gameObjects[0]->IsStatic(true);
-	//m_gameObjects[1]->UseGravity(false);
+	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -5.0f));
+	//m_gameObjects[1]->SetColor(Colors::Blue);
+	//m_gameObjects[1]->SetRotation(glm::vec3(0.0f, 45.0f * Constants::Deg2Rad, 0.0f));
+	//m_gameObjects[1]->AddTorque(glm::vec3(0.0f, 10.0f, 0.0f));
 
-	glm::vec3 color;
-	for (int i = 0; i < 9; i++)
-	{
-		pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-		pos2.y = static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 5.0f));
-		pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-		color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-		color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-		color.z = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-		m_gameObjects.push_back(new Sphere(pos2));
-		m_gameObjects[i + 2]->SetColor(color);
-	}
+	//glm::vec3 color;
+	//for (int i = 0; i < 9; i++)
+	//{
+	//	pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
+	//	//pos2.y = static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 5.0f));
+	//	pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
+	//	color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+	//	color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+	//	color.z = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+	//	m_gameObjects.push_back(new Sphere(pos2));
+	//	m_gameObjects[i + 2]->SetColor(color);
+	//}
 }
 
 void GameManager::KeyboardHandle(unsigned char key, int x, int y)
@@ -152,19 +149,27 @@ void GameManager::draw()
 	// clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearDepth(1);
+	
+	glViewport(0.0f, 0.0f, m_windowWidth, m_windowHeight);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(75.0, (GLdouble)m_windowWidth / (GLdouble)m_windowHeight, 1.0, 100.0);
+
 	// set camera / view matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	// looking from above
-	//gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-	gluLookAt(0.0, 2.5, 5.0, 0.0, 2.5, 1.0, 0.0, 1.0, 0.0);
+	gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	//gluLookAt(0.0, 2.5, 5.0, 0.0, 2.5, 1.0, 0.0, 1.0, 0.0);
 
+
+	//DrawCube();
 	/*glViewport(0.0f, 0.0f, m_windowWidth, m_windowHeight);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(75.0, (GLdouble)m_windowWidth / (GLdouble)m_windowHeight, 1.0, 100.0);*/
 	
-	drawPlane();
+	//drawPlane();
 	if (m_isRendering)
 	{
 		for (int i = 0; i < m_gameObjects.size(); i++)
@@ -250,18 +255,18 @@ void GameManager::update()
 	{
 		for (int j = 0; j < m_gameObjects.size(); j++)
 		{
+			// gameObjects[0] is the plane, and the plane has no collider yet
+			if (i == 0 || j == 0)
+				continue;
 			if (m_gameObjects[i] != m_gameObjects[j])
 			{
-				Collider::SphereCollider col1 = m_gameObjects[i]->GetCollider();
-				Collider::SphereCollider col2 = m_gameObjects[j]->GetCollider();
+				Collision::SphereCollider col1 = m_gameObjects[i]->GetCollider();
+				Collision::SphereCollider col2 = m_gameObjects[j]->GetCollider();
+				//if(col1)
 				float inters = collisionDetection(col1, col2);
-				//if (inters >= 0.0f && b == false)
 				if (inters >= 0.0f)
 				{
-					/*m_gameObjects[i]->SetColor(Colors::Red);
-					m_gameObjects[j]->SetColor(Colors::Red);*/
 					collisionResponse(*m_gameObjects[i], *m_gameObjects[j], inters);
-					//b = true;
 				}
 			}
 		}
@@ -269,7 +274,7 @@ void GameManager::update()
 }
 
 // returning lenght of intersection. returns -1 if no collsision was detected
-float GameManager::collisionDetection(const Collider::SphereCollider &col1, const Collider::SphereCollider &col2)
+float GameManager::collisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2)
 {
 	float minDis_sqrd = pow(col1.radius + col2.radius, 2);
 	float realDis_sqrd = pow(col1.position.x - col2.position.x, 2) + pow(col1.position.y - col2.position.y, 2) + pow(col1.position.z - col2.position.z, 2);
@@ -295,6 +300,8 @@ void GameManager::collisionResponse(GameObject& g1, GameObject& g2, float inster
 	float im2 = 1 / m2;
 	glm::vec3 pos1 = g1.GetPosition();
 	glm::vec3 pos2 = g2.GetPosition();
+	
+
 	glm::vec3 collisionNormal = glm::normalize(pos1 - pos2);
 
 	// checking if collision response is needed
