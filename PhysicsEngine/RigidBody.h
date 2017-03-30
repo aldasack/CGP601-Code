@@ -16,10 +16,11 @@
 class RigidBody
 {
 public:
-	RigidBody();
+	RigidBody(Collision::ColliderType colliderType);
 	//RigidBody(const glm::vec3 position);
 	~RigidBody();
 	void Update(float dt);
+	void Shutdown();
 
 	glm::vec3 GetPosition() const;
 	void SetPosition(const glm::vec3& position);
@@ -37,12 +38,14 @@ public:
 
 	bool UseGravity() const;
 	void UseGravity(const bool useGravity);
-	// Returns rotation in eulerangles in radians
-	glm::vec3 GetRotation() const;
+	// Returns rotation as euler angles in radians
+	glm::vec3 GetEulerRotation() const;
 	// Returns rotation in angle-axis representation. 
 	glm::vec4 GetAxisAngleRotation();
+	// Returns rotation as a queternion
+	glm::quat GetQuaternionRotation() const;
 	// Rotation is represented as euler angles in radians
-	void SetRotation(const glm::vec3& rotation);
+	void SetEulerRotation(const glm::vec3& rotation);
 	// Setting the Inertia Tensor
 	void SetInertiaTensor(const glm::mat3& tensor);
 
@@ -55,6 +58,10 @@ public:
 	void AddTorque(const glm::vec3& torque);
 	// rotation is represented as euler angles in radians
 	void Rotate(const glm::vec3& rotation);
+
+	Collision::SphereCollider& GetSphereCollider() const;
+	Collision::BoxCollider& GetBoxCollider() const;
+	Collision::ColliderType GetColliderType() const;
 
 private:
 	glm::vec3 m_position;
@@ -73,6 +80,8 @@ private:
 	// Inverse mass is needed for collision response calculations
 	float m_inverseMass;
 	glm::vec3 m_centreOfMass;
+	// 
+	float m_bounciness;
 	
 	// description needed
 	glm::mat3x3 m_inertiaTensor;
@@ -81,7 +90,9 @@ private:
 	bool m_isStatic;
 	bool m_useGravity;
 
-	//Collider::SphereCollider m_collider;
+	Collision::SphereCollider* m_pSphereCollider;
+	Collision::BoxCollider* m_pBoxCollider;
+	Collision::ColliderType m_colliderType;
 
 	// Resets the force and torque accumulators after each iteration
 	void resetAccumulators();

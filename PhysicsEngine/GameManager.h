@@ -14,14 +14,18 @@
 #include <Windows.h>
 
 #include "Defs.h"
-#include "Sphere.h";
-#include "Plane.h"
-#include "GameObject.h"
 
+// This class is a singleton
 class GameManager
 {
 public:
-	GameManager();
+	static GameManager& getInstance()
+	{
+		if (!s_instance)
+			s_instance = new GameManager();
+
+		return *s_instance;
+	}
 	~GameManager();
 	void Shutdown();
 	void Loop();
@@ -29,6 +33,8 @@ public:
 	void KeyboardHandle(unsigned char key, int x, int y);
 	//int Run();
 	void Exit(int);
+
+	void AddRigidBody(RigidBody* rigidbody);
 
 private:
 	const unsigned int m_windowHeight = 768;
@@ -50,17 +56,22 @@ private:
 	std::chrono::time_point<std::chrono::steady_clock> loopOldTime;
 	std::chrono::time_point<std::chrono::steady_clock> loopNewTime;
 
-	//std::vector<RigidBody*> m_rigidBodys;
+	// stores all RigidBodys to update them
+	std::vector<RigidBody*> m_rigidBodys;
+	// stores all GameObjects to draw them
 	std::vector<GameObject*> m_gameObjects;
-	//std::vector<Sphere*> m_spheres;
 
+	GameManager();
 	void clearKeyState();
 	void draw();
-	void drawPlane();
+	//void drawPlane();
 	void drawText(glm::vec2 position, glm::vec3 color, std::string text);
 	void update();
-	float collisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
-	void collisionResponse(GameObject& g1, GameObject& g2, float intersection);
+	float sphereCollisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
+	float boxCollisionDetection(const Collision::BoxCollider & col1, const Collision::BoxCollider & col2);
+	void collisionResponse(RigidBody& g1, RigidBody& g2, float intersection);
+
+	static GameManager* s_instance;
 };
 
 #endif // !_GAMEMANAGER_H

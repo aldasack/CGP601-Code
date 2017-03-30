@@ -13,12 +13,18 @@
 #include <glut.h>
 #include <string>
 #include <exception>
+#include <array>
+#include <vector>
 
 #include "glm\glm.hpp"
 #include "glm\gtc\quaternion.hpp"
 
 // all angles are represented in radians
 #define GLM_FORCE_RADIANS
+
+// Basic assert function to do some checking - if the check is violate
+// i.e. false, then this line will cause the debugger to stop on the line
+#define DBG_ASSERT(f) { if(!(f)){ __debugbreak(); }; }
 
 namespace Constants
 {
@@ -34,33 +40,69 @@ namespace Constants
 //	float TotalTime = 0.0f;
 //}
 
-//namespace Math
-//{
-//	struct Vector3
-//	{
-//		float x, y, z;
-//	};
-//
-//	struct Vector2
-//	{
-//		float x, y;
-//	};
-//}
+namespace Math
+{
+	// Rotates vector by euler angles in radians
+	static glm::vec3& rotateVector(const glm::vec3& vector, const glm::vec3& eulerAngles)
+	{
+		// not implemented
+		DBG_ASSERT(false);
+		return glm::vec3();
+	}
+
+	// Rotates vector by normalized quaternion
+	static glm::vec3 rotateVector(const glm::vec3& vector, const glm::quat& quat)
+	{
+		// check if quaternion is normalized
+		float length = glm::length(quat);
+		DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+
+		glm::vec3 result;
+		
+		// x = cross product
+		// p' = q x p x q^-1
+		// p' = (2w^2 - 1)p + 2(v dot p)v + 2w(v x p)
+
+		float vMult = 2.0f * (quat.x * vector.x + quat.y * vector.y + quat.z * vector.z);
+		float crossMult = 2.0f * quat.w;
+		float pMult = crossMult * quat.w - 1.0f;
+		
+		result.x = pMult * vector.x + vMult * quat.x + crossMult * (quat.y * vector.z - quat.z * vector.y);
+		result.y = pMult * vector.y + vMult * quat.y + crossMult * (quat.z * vector.x - quat.x * vector.z);
+		result.z = pMult * vector.z + vMult * quat.z + crossMult * (quat.x * vector.y - quat.y * vector.x);
+
+		return result;
+	}
+}
+
 
 namespace Collision
 {
-	enum class ColliderType { Sphere, Box, Plane, Mesh };
+	enum class ColliderType { Sphere, Box, Plane, Mesh, None };
 
-	struct Collider
+	class Collider;
+	class SphereCollider;
+	class BoxCollider;
+
+	/*class Collider
 	{
-		ColliderType colliderType;
+	protected: ColliderType m_colliderType;
+	public: ColliderType GetColliderType() { return m_colliderType; };
+			virtual void Update() = 0;
 	};
 
-	struct SphereCollider : Collider
+	class SphereCollider : Collider
 	{
+	private:
 		glm::vec3 position;
 		float radius;
 	};
+
+	class BoxCollider : Collider
+	{
+	private:
+		glm::vec3 points[4];
+	};*/
 }
 
 namespace Colors
@@ -71,9 +113,12 @@ namespace Colors
 	const glm::vec3 Blue = { 0.0f, 0.0f, 1.0f };
 }
 
-//class RigidBody;
-//class GameManager;
-//class Sphere;
-//class GameObject;
+class RigidBody;
+class GameManager;
+class GameObject;
+class Sphere;
+class Box;
+class Plane;
+
 
 #endif // !_DEFS_H

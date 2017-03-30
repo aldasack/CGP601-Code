@@ -10,14 +10,13 @@
 ////////////////////////////////
 
 #include "Defs.h"
-#include "RigidBody.h"
 
 class GameObject
 {
 public:
-	GameObject();
-	GameObject(glm::vec3 position);
-	GameObject(glm::vec3 position, glm::vec3 rotation);
+	GameObject(Collision::ColliderType colliderType);
+	GameObject(Collision::ColliderType colliderType, glm::vec3 position);
+	GameObject(Collision::ColliderType colliderType, glm::vec3 position, glm::vec3 rotation);
 	~GameObject();
 	virtual void Shutdown() = 0;
 	virtual void Draw() = 0;
@@ -27,14 +26,16 @@ public:
 	void SetScale(const glm::vec3& scale);
 	void SetRotation(const glm::vec3& rotation);
 	void SetVelocity(const glm::vec3& velocity);
+	void SetMass(const float mass);
 	void SetColor(const glm::vec3& color);
 
 	glm::vec3 GetPosition() const;
 	glm::vec3 GetRotation() const;
+	glm::vec3 GetScale() const;
 	glm::vec3 GetAcceleration() const;
 	glm::vec3 GetVelocity() const;
 	float GetMass() const;
-	Collision::SphereCollider GetCollider() const;
+	//Collision::SphereCollider GetCollider() const;
 
 	bool IsStatic() const;
 	void IsStatic(const bool isStatic);
@@ -49,12 +50,16 @@ public:
 protected:
 	void shutdown();
 	void prepareDraw();
-	Collision::SphereCollider m_collider;
+	//Collision::SphereCollider m_collider;
 	RigidBody* m_pRigidbody;
+
+	// stores vertices, gets sets by child class. Needs to be accsessed by RigidBody to generate Collider
+	std::vector<glm::vec3> m_vertices;
 
 private:
 	//virtual void setInertiaTensor() = 0;
 	glm::vec3 m_color;
+	glm::vec3 m_scale;
 };
 
 #endif // ! _OBJECT_H

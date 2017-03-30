@@ -6,7 +6,12 @@
 
 #include "RigidBody.h"
 
-RigidBody::RigidBody()
+#include "Collider.h"
+#include "SphereCollider.h"
+#include "BoxCollider.h"
+#include "GameManager.h"
+
+RigidBody::RigidBody(Collision::ColliderType colliderType)
 {
 	m_position.x = 0.0f;
 	m_position.y = 0.0f;
@@ -55,8 +60,17 @@ RigidBody::RigidBody()
 	m_linearDamping = 0.99f;
 	m_angularDamping = 0.99f;
 
-	/*m_collider.position = m_position;
-	m_collider.radius = 0.5f;*/
+	// setting up the collider
+	m_colliderType = colliderType;
+
+	m_pSphereCollider = new Collision::SphereCollider(*this);
+	m_pSphereCollider->SetPosition(m_position);
+	m_pSphereCollider->SetRadius(0.5f);
+
+	m_pBoxCollider = new Collision::BoxCollider(*this);
+
+	// register RigidBody with the GameManager
+	GameManager::getInstance().AddRigidBody(this);
 }
 
 RigidBody::~RigidBody(){}
@@ -130,6 +144,10 @@ void RigidBody::Update(float dt)
 
 	resetAccumulators();
 
+	// Updating Colliders to transform them the same way as the rigidbody
+	m_pSphereCollider->Update();
+	m_pBoxCollider->Update();
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Testcase for Objective 1: Gravity on Sphere
 	// get time of fall.
@@ -143,6 +161,20 @@ void RigidBody::Update(float dt)
 	//	std::cout << "Velcoity: " << m_velocity.y << std::endl;
 	//}
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}
+
+void RigidBody::Shutdown()
+{
+	if (m_pSphereCollider)
+	{
+		m_pSphereCollider = nullptr;
+		delete m_pSphereCollider;
+	}
+	if (m_pBoxCollider)
+	{
+		m_pBoxCollider = nullptr;
+		delete m_pBoxCollider;
+	}
 }
 
 glm::vec3 RigidBody::GetPosition() const
@@ -178,7 +210,7 @@ float RigidBody::GetInverseMass() const
 void RigidBody::SetMass(const float mass)
 {
 	// mass can not be zero or less
-	assert(mass > 0.0f);
+	DBG_ASSERT(mass > 0.0f);
 	if (mass <= 0.0f)
 	{
 		throw  std::exception("Mass can't be negative or zero!");
@@ -208,7 +240,7 @@ void RigidBody::UseGravity(const bool useGravity)
 	m_useGravity = useGravity;
 }
 
-glm::vec3 RigidBody::GetRotation() const
+glm::vec3 RigidBody::GetEulerRotation() const
 {
 	return glm::eulerAngles(m_rotation);
 }
@@ -242,7 +274,15 @@ glm::vec4 RigidBody::GetAxisAngleRotation()
 	// source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/
 }
 
-void RigidBody::SetRotation(const glm::vec3& rotation)
+glm::quat RigidBody::GetQuaternionRotation() const
+{
+	// check if quaternion is normalized
+	float length = glm::length(m_rotation);
+	DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+	return m_rotation;
+}
+
+void RigidBody::SetEulerRotation(const glm::vec3& rotation)
 {
 	m_rotation = glm::quat(rotation);
 	m_rotation = glm::normalize(m_rotation);
@@ -297,7 +337,22 @@ void RigidBody::Rotate(const glm::vec3& rotation)
 	
 	// check if quaternion is normalized
 	float length = glm::length(m_rotation);
-	assert(abs(length - 1.0f) < 0.001f);
+	DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+}
+
+Collision::SphereCollider& RigidBody::GetSphereCollider() const
+{
+	return *m_pSphereCollider;
+}
+
+Collision::BoxCollider& RigidBody::GetBoxCollider() const
+{
+	return *m_pBoxCollider;
+}
+
+Collision::ColliderType RigidBody::GetColliderType() const
+{
+	return m_colliderType;
 }
 
 void RigidBody::resetAccumulators()

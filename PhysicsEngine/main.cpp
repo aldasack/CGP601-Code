@@ -44,7 +44,7 @@ void Reshape(int width, int height)
 
 int main(void)
 {
-	gameManager = new GameManager();
+	gameManager = &GameManager::getInstance();
 	
 	// Initialize GLUT
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);

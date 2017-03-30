@@ -148,20 +148,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoxCollider.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="Box.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="SphereCollider.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoxCollider.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="Box.h" />
     <ClInclude Include="Defs.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="SphereCollider.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

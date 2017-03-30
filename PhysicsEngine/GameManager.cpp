@@ -8,6 +8,17 @@
 
 #include "GameManager.h"
 
+#include "RigidBody.h"
+#include "Collider.h"
+#include "SphereCollider.h"
+#include "BoxCollider.h"
+#include "Sphere.h";
+#include "Plane.h"
+#include "Box.h"
+#include "GameObject.h"
+
+GameManager* GameManager::s_instance = nullptr;
+
 GameManager::GameManager()
 {
 	m_exitCode = EXIT_SUCCESS;
@@ -34,9 +45,21 @@ void GameManager::Shutdown()
 {
 	for (int i = 0; i < m_gameObjects.size(); i++)
 	{
-		m_gameObjects[i]->Shutdown();
-		m_gameObjects[i] = nullptr;
-		delete m_gameObjects[i];
+		if (m_gameObjects[i])
+		{
+			m_gameObjects[i]->Shutdown();
+			m_gameObjects[i] = nullptr;
+			delete m_gameObjects[i];
+		}
+	}
+	for (int i = 0; i < m_rigidBodys.size(); i++)
+	{
+		if (m_rigidBodys[i])
+		{
+			m_rigidBodys[i]->Shutdown();
+			m_rigidBodys[i] = nullptr;
+			delete m_rigidBodys[i];
+		}
 	}
 }
 
@@ -67,22 +90,26 @@ void GameManager::InitScene()
 {
 	srand(static_cast<unsigned>(time(0)));
 	glm::vec3 pos1;
-	pos1.x = 0.5f;
+	pos1.x = 0.0f;
 	pos1.y = -0.5f;
-	pos1.z = 5.0;
+	pos1.z = 0.0;
 
 	glm::vec3 pos2;
-	pos2.x = 0.0f;
+	pos2.x = 1.21f;
 	pos2.y = -0.5f;
 	pos2.z = 0.0;
 
 	m_gameObjects.push_back(new Plane());
-	m_gameObjects.push_back(new Sphere(pos1));
+	m_gameObjects[0]->SetColor(glm::vec3(0.5f, 0.5f, 0.5f));
+	//m_gameObjects.push_back(new Sphere(pos1));
+	m_gameObjects.push_back(new Box(pos1));
+	m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f * 1.0f, 0.0f));
+	m_gameObjects[1]->SetColor(Colors::Blue);
+	m_gameObjects.push_back(new Box(pos2));
+	m_gameObjects[2]->SetColor(Colors::White);
 
-	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -5.0f));
-	//m_gameObjects[1]->SetColor(Colors::Blue);
-	//m_gameObjects[1]->SetRotation(glm::vec3(0.0f, 45.0f * Constants::Deg2Rad, 0.0f));
-	//m_gameObjects[1]->AddTorque(glm::vec3(0.0f, 10.0f, 0.0f));
+	//m_gameObjects[1]->SetVelocity(glm::vec3(-2.0f, 0.0f, -5.0f));
+	//m_gameObjects[1]->SetColor(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	//glm::vec3 color;
 	//for (int i = 0; i < 9; i++)
@@ -134,6 +161,11 @@ void GameManager::KeyboardHandle(unsigned char key, int x, int y)
 void GameManager::Exit(int exitCode)
 {
 	m_exitCode = exitCode;
+}
+
+void GameManager::AddRigidBody(RigidBody* rigidbody)
+{
+	m_rigidBodys.push_back(rigidbody);
 }
 
 void GameManager::clearKeyState()
@@ -195,18 +227,18 @@ void GameManager::draw()
 	glutSwapBuffers();
 }
 
-void GameManager::drawPlane()
-{
-	//glLoadIdentity();
-	glColor3f(0.5f, 0.5f, 0.5f);
-
-	glBegin(GL_QUADS);
-	glVertex3f(-100.0f, -1.0f, -100.0f);
-	glVertex3f(-100.0f, -1.0f, 100.0f);
-	glVertex3f(100.0f, -1.0f, 100.0f);
-	glVertex3f(100.0f, -1.0f, -100.0f);
-	glEnd();
-}
+//void GameManager::drawPlane()
+//{
+//	//glLoadIdentity();
+//	glColor3f(0.5f, 0.5f, 0.5f);
+//
+//	glBegin(GL_QUADS);
+//	glVertex3f(-100.0f, -1.0f, -100.0f);
+//	glVertex3f(-100.0f, -1.0f, 100.0f);
+//	glVertex3f(100.0f, -1.0f, 100.0f);
+//	glVertex3f(100.0f, -1.0f, -100.0f);
+//	glEnd();
+//}
 
 void GameManager::drawText(glm::vec2 position, glm::vec3 color, std::string text)
 {
@@ -245,28 +277,37 @@ void GameManager::update()
 	//m_gameObjects[1]->AddForce(glm::vec3(1.0f, 0.0f, 0.0f));
 
 	// update loop. This loop moves the objects
-	for (int i = 0; i < m_gameObjects.size(); i++)
+	for (int i = 0; i < m_rigidBodys.size(); i++)
 	{
-		m_gameObjects[i]->Update(m_targetFrameTime);
+		m_rigidBodys[i]->Update(m_targetFrameTime);
 	}
 	
 	// collision loop. This loop checks for collision
-	for (int i = 0; i < m_gameObjects.size(); i++)
+	for (int i = 0; i < m_rigidBodys.size(); i++)
 	{
-		for (int j = 0; j < m_gameObjects.size(); j++)
+		for (int j = 0; j < m_rigidBodys.size(); j++)
 		{
+/**********/// TODO: Fix this hacky code
 			// gameObjects[0] is the plane, and the plane has no collider yet
 			if (i == 0 || j == 0)
 				continue;
-			if (m_gameObjects[i] != m_gameObjects[j])
+			if (&m_rigidBodys[i] != &m_rigidBodys[j])
 			{
-				Collision::SphereCollider col1 = m_gameObjects[i]->GetCollider();
-				Collision::SphereCollider col2 = m_gameObjects[j]->GetCollider();
-				//if(col1)
-				float inters = collisionDetection(col1, col2);
+				//Collision::SphereCollider col1 = m_rigidBodys[i]->GetSphereCollider();
+				//Collision::SphereCollider col2 = m_rigidBodys[j]->GetSphereCollider();
+				////if(col1)
+				//float inters = sphereCollisionDetection(col1, col2);
+				//if (inters >= 0.0f)
+				//{
+				//	collisionResponse(*m_rigidBodys[i], *m_rigidBodys[j], inters);
+				//}
+				Collision::BoxCollider col1 = m_rigidBodys[i]->GetBoxCollider();
+				Collision::BoxCollider col2 = m_rigidBodys[j]->GetBoxCollider();
+				float inters = boxCollisionDetection(col1, col2);
 				if (inters >= 0.0f)
 				{
-					collisionResponse(*m_gameObjects[i], *m_gameObjects[j], inters);
+					m_gameObjects[i]->SetColor(Colors::Red);
+					m_gameObjects[j]->SetColor(Colors::Red);
 				}
 			}
 		}
@@ -274,10 +315,10 @@ void GameManager::update()
 }
 
 // returning lenght of intersection. returns -1 if no collsision was detected
-float GameManager::collisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2)
+float GameManager::sphereCollisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2)
 {
-	float minDis_sqrd = pow(col1.radius + col2.radius, 2);
-	float realDis_sqrd = pow(col1.position.x - col2.position.x, 2) + pow(col1.position.y - col2.position.y, 2) + pow(col1.position.z - col2.position.z, 2);
+	float minDis_sqrd = pow(col1.GetRadius() + col2.GetRadius(), 2);
+	float realDis_sqrd = pow(col1.GetPosition().x - col2.GetPosition().x, 2) + pow(col1.GetPosition().y - col2.GetPosition().y, 2) + pow(col1.GetPosition().z - col2.GetPosition().z, 2);
 	
 	if (realDis_sqrd <= minDis_sqrd)
 	{
@@ -290,7 +331,161 @@ float GameManager::collisionDetection(const Collision::SphereCollider &col1, con
 	}
 }
 
-void GameManager::collisionResponse(GameObject& g1, GameObject& g2, float instersection)
+// returning lenght of intersection. returns -1 if no collsision was detected
+float GameManager::boxCollisionDetection(const Collision::BoxCollider& col1, const Collision::BoxCollider& col2)
+{
+	std::array<glm::vec3, 8> edges1 = col1.GetEdges();
+	std::array<glm::vec3, 8> edges2 = col2.GetEdges();
+	// stores all the calculated dot products (absulute value)
+	float c[3][3];
+	float dot[3][3];
+	float d[3];
+	float r, r0, r1;
+
+	glm::vec3 difference = col2.m_center - col1.m_center;
+
+	// 1. Axis: col1 x (0) against col2 x, y & z
+	for (int i = 0; i < 3; i++)
+	{
+		c[0][i] = glm::dot(col1.m_axes[0], col2.m_axes[i]);
+		dot[0][i] = abs(c[0][i]);
+	}
+	d[0] = glm::dot(difference, col1.m_axes[0]);
+	r = abs(d[0]);
+	r0 = col1.m_extent.x;
+	r1 = col1.m_extent.x * dot[0][0] + col1.m_extent.y * dot[0][1] + col1.m_extent.z * dot[0][2];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 2. Axis: col1 y (1) against col2 x, y & z
+	for (int i = 0; i < 3; i++)
+	{
+		c[1][i] = glm::dot(col1.m_axes[1], col2.m_axes[i]);
+		dot[1][i] = abs(c[1][i]);
+	}
+	d[1] = glm::dot(difference, col1.m_axes[1]);
+	r = abs(d[1]);
+	r0 = col1.m_extent.y;
+	r1 = col1.m_extent.x * dot[1][0] + col1.m_extent.y * dot[1][1] + col1.m_extent.z * dot[1][2];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 3. Axis: col1 z (2) against col2 x, y & z
+	for (int i = 0; i < 3; i++)
+	{
+		c[2][i] = glm::dot(col1.m_axes[2], col2.m_axes[i]);
+		dot[2][i] = abs(c[2][i]);
+	}
+	d[2] = glm::dot(difference, col1.m_axes[2]);
+	r = abs(d[2]);
+	r0 = col1.m_extent.z;
+	r1 = col1.m_extent.x * dot[2][0] + col1.m_extent.y * dot[2][1] + col1.m_extent.z * dot[2][2];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 4. Axis: col2 x (1) against col1 x, y & z (dot products already calculated)
+	r = abs(glm::dot(difference, col1.m_axes[0]));
+	r0 = col1.m_extent.x * dot[0][0] + col1.m_extent.y * dot[1][0] + col1.m_extent.z * dot[2][0];
+	r1 = col1.m_extent.z;
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 5. Axis: col2 y (2) against col1 x, y & z (dot products already calculated)
+	r = abs(glm::dot(difference, col1.m_axes[1]));
+	r0 = col1.m_extent.x * dot[0][1] + col1.m_extent.y * dot[1][1] + col1.m_extent.z * dot[2][1];
+	r1 = col1.m_extent.z;
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 6. Axis: col2 z (3) against col1 x, y & z (dot products already calculated)
+	r = abs(glm::dot(difference, col1.m_axes[2]));
+	r0 = col1.m_extent.x * dot[0][2] + col1.m_extent.y * dot[1][2] + col1.m_extent.z * dot[2][2];
+	r1 = col1.m_extent.z;
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 7. Axis: col1 x (1) against col2 x
+	r = abs(d[2] * c[1][0] - d[1] * c[2][0]);
+	r0 = col1.m_extent.y * dot[2][0] + col1.m_extent.z * dot[1][0];
+	r1 = col2.m_extent.y * dot[0][2] + col2.m_extent.z * dot[0][1];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 8. Axis: col1 x (1) against col2 y
+	r = abs(d[2] * c[1][1] - d[1] * c[2][1]);
+	r0 = col1.m_extent.y * dot[2][1] + col1.m_extent.z * dot[1][1];
+	r1 = col2.m_extent.x * dot[0][2] + col2.m_extent.z * dot[0][0];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 9. Axis: col1 x (1) against col2 z
+	r = abs(d[2] * c[1][2] - d[1] * c[2][2]);
+	r0 = col1.m_extent.y * dot[2][2] + col1.m_extent.z * dot[1][2];
+	r1 = col2.m_extent.x * dot[0][1] + col2.m_extent.y * dot[0][0];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 10. Axis: col1 y (1) against col2 x
+	r = abs(d[0] * c[2][0] - d[2] * c[0][0]);
+	r0 = col1.m_extent.x * dot[2][0] + col1.m_extent.z * dot[0][0];
+	r1 = col2.m_extent.y * dot[1][2] + col2.m_extent.z * dot[1][1];
+
+	if (r > r0 + r1)
+		return -1.0f;
+	
+	// 11. Axis: col1 y (1) against col2 y
+	r = abs(d[0] * c[2][1] - d[2] * c[0][1]);
+	r0 = col1.m_extent.x * dot[2][1] + col1.m_extent.z * dot[0][1];
+	r1 = col2.m_extent.x * dot[1][2] + col2.m_extent.z * dot[1][0];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 12. Axis: col1 y (1) against col2 z
+	r = abs(d[0] * c[2][2] - d[2] * c[0][2]);
+	r0 = col1.m_extent.x * dot[2][2] + col1.m_extent.z * dot[0][2];
+	r1 = col2.m_extent.x * dot[1][1] + col2.m_extent.y * dot[1][0];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 13. Axis: col1 z (1) against col2 x
+	r = abs(d[1] * c[0][0] - d[0] * c[1][0]);
+	r0 = col1.m_extent.x * dot[1][0] + col1.m_extent.y * dot[0][0];
+	r1 = col2.m_extent.y * dot[2][2] + col2.m_extent.z * dot[2][1];
+
+	if (r > r0 + r1)
+		return -1.0f;
+	
+	// 14. Axis: col1 z (1) against col2 y
+	r = abs(d[1] * c[0][1] - d[0] * c[1][1]);
+	r0 = col1.m_extent.x * dot[1][1] + col1.m_extent.y * dot[0][1];
+	r1 = col2.m_extent.x * dot[2][2] + col2.m_extent.z * dot[2][0];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	// 15. Axis: col1 z (1) against col2 z
+	r = abs(d[1] * c[0][2] - d[0] * c[1][2]);
+	r0 = col1.m_extent.x * dot[1][2] + col1.m_extent.y * dot[0][2];
+	r1 = col2.m_extent.x * dot[2][1] + col2.m_extent.y * dot[2][0];
+
+	if (r > r0 + r1)
+		return -1.0f;
+
+	return 1.0f;
+}
+
+void GameManager::collisionResponse(RigidBody& g1, RigidBody& g2, float instersection)
 {
 	glm::vec3 v1 = g1.GetVelocity();
 	glm::vec3 v2 = g2.GetVelocity();
