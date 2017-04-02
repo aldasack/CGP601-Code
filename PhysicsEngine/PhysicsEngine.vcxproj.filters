@@ -13,69 +13,93 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Headerdateien\Graphics">
+      <UniqueIdentifier>{bd4ecc44-7f4d-45a5-bf4c-be57337dcc70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Graphics">
+      <UniqueIdentifier>{74e080d2-8a0c-4237-b471-eef9f9bbe4be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\Physics">
+      <UniqueIdentifier>{5c8ec757-db4a-4561-a046-7c7d3af21bc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quelldateien\Physics">
+      <UniqueIdentifier>{3f36301b-1646-4cae-9936-133eed5b2961}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Sphere.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="RigidBody.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="GameManager.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Quelldateien\Graphics</Filter>
+    </ClCompile>
     <ClCompile Include="GameObject.cpp">
-      <Filter>Quelldateien</Filter>
+      <Filter>Quelldateien\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Plane.cpp">
-      <Filter>Quelldateien</Filter>
+      <Filter>Quelldateien\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
-    <ClCompile Include="SphereCollider.cpp">
-      <Filter>Quelldateien</Filter>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Quelldateien\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="BoxCollider.cpp">
-      <Filter>Quelldateien</Filter>
+      <Filter>Quelldateien\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Quelldateien</Filter>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Quelldateien\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactData.cpp">
+      <Filter>Quelldateien\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBody.cpp">
+      <Filter>Quelldateien\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="SphereCollider.cpp">
+      <Filter>Quelldateien\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsManager.cpp">
+      <Filter>Quelldateien\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Sphere.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="RigidBody.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
     <ClInclude Include="Defs.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="GameManager.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Headerdateien</Filter>
+    <ClInclude Include="Box.h">
+      <Filter>Headerdateien\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Plane.h">
-      <Filter>Headerdateien</Filter>
+      <Filter>Headerdateien\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Headerdateien</Filter>
+    <ClInclude Include="Sphere.h">
+      <Filter>Headerdateien\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="SphereCollider.h">
-      <Filter>Headerdateien</Filter>
+    <ClInclude Include="GameObject.h">
+      <Filter>Headerdateien\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="BoxCollider.h">
-      <Filter>Headerdateien</Filter>
+      <Filter>Headerdateien\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>Headerdateien</Filter>
+    <ClInclude Include="Collider.h">
+      <Filter>Headerdateien\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactData.h">
+      <Filter>Headerdateien\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="SphereCollider.h">
+      <Filter>Headerdateien\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody.h">
+      <Filter>Headerdateien\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsManager.h">
+      <Filter>Headerdateien\Physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

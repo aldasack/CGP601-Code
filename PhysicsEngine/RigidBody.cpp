@@ -9,7 +9,7 @@
 #include "Collider.h"
 #include "SphereCollider.h"
 #include "BoxCollider.h"
-#include "GameManager.h"
+#include "PhysicsManager.h"
 
 RigidBody::RigidBody(Collision::ColliderType colliderType)
 {
@@ -69,8 +69,8 @@ RigidBody::RigidBody(Collision::ColliderType colliderType)
 
 	m_pBoxCollider = new Collision::BoxCollider(*this);
 
-	// register RigidBody with the GameManager
-	GameManager::getInstance().AddRigidBody(this);
+	// register RigidBody with the PhysicsManager
+	PhysicsManager::GetInstance().AddRigidBody(*this);
 }
 
 RigidBody::~RigidBody(){}
@@ -167,13 +167,14 @@ void RigidBody::Shutdown()
 {
 	if (m_pSphereCollider)
 	{
-		m_pSphereCollider = nullptr;
 		delete m_pSphereCollider;
+		m_pSphereCollider = nullptr;
+		
 	}
 	if (m_pBoxCollider)
 	{
-		m_pBoxCollider = nullptr;
 		delete m_pBoxCollider;
+		m_pBoxCollider = nullptr;
 	}
 }
 
@@ -199,6 +200,7 @@ void RigidBody::SetVelocity(const glm::vec3& velocity)
 
 float RigidBody::GetMass() const
 {
+	DBG_ASSERT(m_mass > 0.0f);
 	return m_mass;
 }
 
@@ -211,11 +213,7 @@ void RigidBody::SetMass(const float mass)
 {
 	// mass can not be zero or less
 	DBG_ASSERT(mass > 0.0f);
-	if (mass <= 0.0f)
-	{
-		throw  std::exception("Mass can't be negative or zero!");
-		return;
-	}
+
 	m_mass = mass;
 	m_inverseMass = 1 / mass;
 }
@@ -269,7 +267,7 @@ glm::vec4 RigidBody::GetAxisAngleRotation()
 	}
 
 	float tmp = glm::length(m_rotation);
-	assert(abs(tmp - 1.0f) < 0.001f);
+	DBG_ASSERT(abs(tmp - 1.0f) < Constants::Precision);
 	return rotation;
 	// source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/
 }
@@ -278,7 +276,7 @@ glm::quat RigidBody::GetQuaternionRotation() const
 {
 	// check if quaternion is normalized
 	float length = glm::length(m_rotation);
-	DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+	DBG_ASSERT(abs(length - 1.0f) < Constants::Precision);
 	return m_rotation;
 }
 
@@ -286,6 +284,9 @@ void RigidBody::SetEulerRotation(const glm::vec3& rotation)
 {
 	m_rotation = glm::quat(rotation);
 	m_rotation = glm::normalize(m_rotation);
+	
+	float length = glm::length(m_rotation);
+	DBG_ASSERT(abs(length - 1.0f) < Constants::Precision);
 }
 
 void RigidBody::SetInertiaTensor(const glm::mat3& tensor)
@@ -337,7 +338,7 @@ void RigidBody::Rotate(const glm::vec3& rotation)
 	
 	// check if quaternion is normalized
 	float length = glm::length(m_rotation);
-	DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+	DBG_ASSERT(abs(length - 1.0f) < Constants::Precision);
 }
 
 Collision::SphereCollider& RigidBody::GetSphereCollider() const

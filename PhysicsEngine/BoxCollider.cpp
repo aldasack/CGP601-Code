@@ -1,5 +1,5 @@
 ////////////////////////////////
-// Name: BoxCollider.cpp      //
+// Name: BoundingBox.cpp      //
 // Author: Alexander Kocourek //
 // Date: 27/03/2017			  //
 ////////////////////////////////
@@ -38,24 +38,53 @@ void BoxCollider::Update()
 {
 	// Translating the box collider.
 	glm::vec3& position = m_pRigidBody->GetPosition();
-	for (int i = 0; i < m_edges.size(); i++)
+	for (unsigned int i = 0; i < m_edges.size(); i++)
 	{
 		m_transformedEdges[i] = m_edges[i] + position;
 	}
 	m_center = position;
-	// TODO: rotate
+
+
+	// Rotating the box collider / rotating the axis
+	m_rotation = m_pRigidBody->GetQuaternionRotation();
 	// x axis (1,0,0)
-	m_axes[0] = Math::rotateVector(glm::vec3(1.0f, 0.0f, 0.0f), m_pRigidBody->GetQuaternionRotation());
+	m_axes[0] = Math::rotateVector(glm::vec3(1.0f, 0.0f, 0.0f), m_rotation);
 	m_axes[0] = glm::normalize(m_axes[0]);
 	// y axis (0,1,0)
-	m_axes[1] = Math::rotateVector(glm::vec3(0.0f, 1.0f, 0.0f), m_pRigidBody->GetQuaternionRotation());
+	m_axes[1] = Math::rotateVector(glm::vec3(0.0f, 1.0f, 0.0f), m_rotation);
 	m_axes[1] = glm::normalize(m_axes[1]);
 	// z axis (0,0,1)
-	m_axes[2] = Math::rotateVector(glm::vec3(0.0f, 0.0f, 1.0f), m_pRigidBody->GetQuaternionRotation());
+	m_axes[2] = Math::rotateVector(glm::vec3(0.0f, 0.0f, 1.0f), m_rotation);
 	m_axes[2] = glm::normalize(m_axes[2]);
+
+	// TODO: Scale
 }
 
 std::array<glm::vec3, 8> BoxCollider::GetEdges() const
 {
 	return m_transformedEdges;
+}
+
+glm::vec3 BoxCollider::GetCenter() const
+{
+	return m_center;
+}
+
+std::array<glm::vec3, 3> BoxCollider::GetAxes() const
+{
+	return m_axes;
+}
+
+glm::vec3 BoxCollider::GetExtents() const
+{
+	return m_extent;
+}
+
+glm::quat BoxCollider::GetRotation() const
+{
+	// check if quaternion is normalized
+	float length = glm::length(m_rotation);
+	DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+
+	return m_rotation;
 }

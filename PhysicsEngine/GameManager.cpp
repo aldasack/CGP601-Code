@@ -4,15 +4,14 @@
 // Date: 15/02/2017			  //
 ////////////////////////////////
 
-#include <time.h>
-
 #include "GameManager.h"
 
+#include "PhysicsManager.h"
 #include "RigidBody.h"
 #include "Collider.h"
 #include "SphereCollider.h"
 #include "BoxCollider.h"
-#include "Sphere.h";
+#include "Sphere.h"
 #include "Plane.h"
 #include "Box.h"
 #include "GameObject.h"
@@ -37,30 +36,38 @@ GameManager::GameManager()
 	{
 		m_keyState[i] = false;
 	}
+
+	m_pPhysicsManager = &PhysicsManager::GetInstance();
 }
 
 GameManager::~GameManager(){}
 
 void GameManager::Shutdown()
 {
-	for (int i = 0; i < m_gameObjects.size(); i++)
+	for (size_t i = 0; i < m_gameObjects.size(); i++)
 	{
 		if (m_gameObjects[i])
 		{
 			m_gameObjects[i]->Shutdown();
-			m_gameObjects[i] = nullptr;
 			delete m_gameObjects[i];
+			m_gameObjects[i] = nullptr;
 		}
 	}
-	for (int i = 0; i < m_rigidBodys.size(); i++)
+	for (size_t i = 0; i < m_rigidBodys.size(); i++)
 	{
-		if (m_rigidBodys[i])
+		// the rigidbodys gets deleted when corresponding gameobject gets deleted
+		// Although bad code, because vector items point to an unvalid object
+		/*if (m_rigidBodys[i])
 		{
 			m_rigidBodys[i]->Shutdown();
-			m_rigidBodys[i] = nullptr;
 			delete m_rigidBodys[i];
-		}
+			m_rigidBodys[i] = nullptr;
+		}*/
+		m_rigidBodys[i] = nullptr;
 	}
+
+	delete s_instance;
+	s_instance = nullptr;
 }
 
 void GameManager::Loop()
@@ -74,7 +81,8 @@ void GameManager::Loop()
 	oldTime = g_timer.now();
 
 	draw();
-	update();
+	//update();
+	m_pPhysicsManager->Update(m_deltaTime);
 
 	newTime = g_timer.now();
 	float dt = std::chrono::duration_cast<ms>(newTime - oldTime).count();
@@ -92,10 +100,10 @@ void GameManager::InitScene()
 	glm::vec3 pos1;
 	pos1.x = 0.0f;
 	pos1.y = -0.5f;
-	pos1.z = 0.0;
+	pos1.z = 5.0;
 
 	glm::vec3 pos2;
-	pos2.x = 1.21f;
+	pos2.x = 0.0f;
 	pos2.y = -0.5f;
 	pos2.z = 0.0;
 
@@ -103,12 +111,12 @@ void GameManager::InitScene()
 	m_gameObjects[0]->SetColor(glm::vec3(0.5f, 0.5f, 0.5f));
 	//m_gameObjects.push_back(new Sphere(pos1));
 	m_gameObjects.push_back(new Box(pos1));
-	m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f * 1.0f, 0.0f));
 	m_gameObjects[1]->SetColor(Colors::Blue);
 	m_gameObjects.push_back(new Box(pos2));
 	m_gameObjects[2]->SetColor(Colors::White);
+	m_gameObjects[2]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
 
-	//m_gameObjects[1]->SetVelocity(glm::vec3(-2.0f, 0.0f, -5.0f));
+	m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -5.0f));
 	//m_gameObjects[1]->SetColor(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	//glm::vec3 color;
@@ -135,7 +143,10 @@ void GameManager::KeyboardHandle(unsigned char key, int x, int y)
 		m_isRunning = false;
 		this->Shutdown();
 		// exit program, only way using GLUT
+		
+		//_CrtDumpMemoryLeaks();
 		std::exit(EXIT_SUCCESS);
+		
 		break;
 
 	case 32: // Space
@@ -163,9 +174,10 @@ void GameManager::Exit(int exitCode)
 	m_exitCode = exitCode;
 }
 
-void GameManager::AddRigidBody(RigidBody* rigidbody)
+void GameManager::AddRigidBody(RigidBody& rigidbody)
 {
-	m_rigidBodys.push_back(rigidbody);
+	DBG_ASSERT(&rigidbody != nullptr);
+	m_rigidBodys.push_back(&rigidbody);
 }
 
 void GameManager::clearKeyState()
@@ -204,7 +216,7 @@ void GameManager::draw()
 	//drawPlane();
 	if (m_isRendering)
 	{
-		for (int i = 0; i < m_gameObjects.size(); i++)
+		for (size_t i = 0; i < m_gameObjects.size(); i++)
 		{
 			m_gameObjects[i]->Draw();
 		}
@@ -256,7 +268,7 @@ void GameManager::drawText(glm::vec2 position, glm::vec3 color, std::string text
 	glRasterPos2f(position.x, position.y);
 	glColor3i(1.0f, 1.0f, 1.0f);
 
-	for (int i = 0; i < text.size(); i++)
+	for (size_t i = 0; i < text.size(); i++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, text[i]);
 	}
@@ -273,49 +285,41 @@ void GameManager::drawText(glm::vec2 position, glm::vec3 color, std::string text
 
 void GameManager::update()
 {
-	//m_gameObjects[0]->AddForce(glm::vec3(-1.0f, 0.0f, 0.0f));
-	//m_gameObjects[1]->AddForce(glm::vec3(1.0f, 0.0f, 0.0f));
+	//// update loop. This loop moves the objects
+	//for (int i = 0; i < m_rigidBodys.size(); i++)
+	//{
+	//	m_rigidBodys[i]->Update(m_targetFrameTime);
+	//}
 
-	// update loop. This loop moves the objects
-	for (int i = 0; i < m_rigidBodys.size(); i++)
-	{
-		m_rigidBodys[i]->Update(m_targetFrameTime);
-	}
-	
 	// collision loop. This loop checks for collision
-	for (int i = 0; i < m_rigidBodys.size(); i++)
+	for (size_t i = 0; i < m_rigidBodys.size(); i++)
 	{
-		for (int j = 0; j < m_rigidBodys.size(); j++)
+		// Updating the rigidbodys
+		m_rigidBodys[i]->Update(m_targetFrameTime);
+		
+		for (size_t j = 0; j < m_rigidBodys.size(); j++)
 		{
-/**********/// TODO: Fix this hacky code
+/*******************************************************************************/
+			// TODO: Fix this hacky code
 			// gameObjects[0] is the plane, and the plane has no collider yet
 			if (i == 0 || j == 0)
 				continue;
+/*******************************************************************************/			
 			if (&m_rigidBodys[i] != &m_rigidBodys[j])
 			{
-				//Collision::SphereCollider col1 = m_rigidBodys[i]->GetSphereCollider();
-				//Collision::SphereCollider col2 = m_rigidBodys[j]->GetSphereCollider();
-				////if(col1)
-				//float inters = sphereCollisionDetection(col1, col2);
-				//if (inters >= 0.0f)
-				//{
-				//	collisionResponse(*m_rigidBodys[i], *m_rigidBodys[j], inters);
-				//}
-				Collision::BoxCollider col1 = m_rigidBodys[i]->GetBoxCollider();
-				Collision::BoxCollider col2 = m_rigidBodys[j]->GetBoxCollider();
-				float inters = boxCollisionDetection(col1, col2);
-				if (inters >= 0.0f)
+				if (spheresIntersect(m_rigidBodys[i]->GetSphereCollider(), m_rigidBodys[j]->GetSphereCollider()))
 				{
-					m_gameObjects[i]->SetColor(Colors::Red);
-					m_gameObjects[j]->SetColor(Colors::Red);
+					if (boxIntersects(m_rigidBodys[i]->GetBoxCollider(), m_rigidBodys[j]->GetBoxCollider()))
+					{
+						collisionResponse(*m_rigidBodys[i], *m_rigidBodys[j]);
+					}
 				}
 			}
 		}
 	}
 }
 
-// returning lenght of intersection. returns -1 if no collsision was detected
-float GameManager::sphereCollisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2)
+bool GameManager::spheresIntersect(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2)
 {
 	float minDis_sqrd = pow(col1.GetRadius() + col2.GetRadius(), 2);
 	float realDis_sqrd = pow(col1.GetPosition().x - col2.GetPosition().x, 2) + pow(col1.GetPosition().y - col2.GetPosition().y, 2) + pow(col1.GetPosition().z - col2.GetPosition().z, 2);
@@ -323,16 +327,15 @@ float GameManager::sphereCollisionDetection(const Collision::SphereCollider &col
 	if (realDis_sqrd <= minDis_sqrd)
 	{
 		float intersection = sqrt(minDis_sqrd) - sqrt(realDis_sqrd);
-		return intersection;
+		return true;
 	}
 	else
 	{
-		return -1.0f;
+		return false;
 	}
 }
 
-// returning lenght of intersection. returns -1 if no collsision was detected
-float GameManager::boxCollisionDetection(const Collision::BoxCollider& col1, const Collision::BoxCollider& col2)
+bool GameManager::boxIntersects(const Collision::BoxCollider& col1, const Collision::BoxCollider& col2)
 {
 	std::array<glm::vec3, 8> edges1 = col1.GetEdges();
 	std::array<glm::vec3, 8> edges2 = col2.GetEdges();
@@ -341,6 +344,7 @@ float GameManager::boxCollisionDetection(const Collision::BoxCollider& col1, con
 	float dot[3][3];
 	float d[3];
 	float r, r0, r1;
+	//std::vector<float> interpenetration; For contact information only
 
 	glm::vec3 difference = col2.m_center - col1.m_center;
 
@@ -355,8 +359,12 @@ float GameManager::boxCollisionDetection(const Collision::BoxCollider& col1, con
 	r0 = col1.m_extent.x;
 	r1 = col1.m_extent.x * dot[0][0] + col1.m_extent.y * dot[0][1] + col1.m_extent.z * dot[0][2];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
+		
 
 	// 2. Axis: col1 y (1) against col2 x, y & z
 	for (int i = 0; i < 3; i++)
@@ -369,8 +377,11 @@ float GameManager::boxCollisionDetection(const Collision::BoxCollider& col1, con
 	r0 = col1.m_extent.y;
 	r1 = col1.m_extent.x * dot[1][0] + col1.m_extent.y * dot[1][1] + col1.m_extent.z * dot[1][2];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 3. Axis: col1 z (2) against col2 x, y & z
 	for (int i = 0; i < 3; i++)
@@ -383,109 +394,217 @@ float GameManager::boxCollisionDetection(const Collision::BoxCollider& col1, con
 	r0 = col1.m_extent.z;
 	r1 = col1.m_extent.x * dot[2][0] + col1.m_extent.y * dot[2][1] + col1.m_extent.z * dot[2][2];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 4. Axis: col2 x (1) against col1 x, y & z (dot products already calculated)
 	r = abs(glm::dot(difference, col1.m_axes[0]));
 	r0 = col1.m_extent.x * dot[0][0] + col1.m_extent.y * dot[1][0] + col1.m_extent.z * dot[2][0];
 	r1 = col1.m_extent.z;
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 5. Axis: col2 y (2) against col1 x, y & z (dot products already calculated)
 	r = abs(glm::dot(difference, col1.m_axes[1]));
 	r0 = col1.m_extent.x * dot[0][1] + col1.m_extent.y * dot[1][1] + col1.m_extent.z * dot[2][1];
 	r1 = col1.m_extent.z;
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 6. Axis: col2 z (3) against col1 x, y & z (dot products already calculated)
 	r = abs(glm::dot(difference, col1.m_axes[2]));
 	r0 = col1.m_extent.x * dot[0][2] + col1.m_extent.y * dot[1][2] + col1.m_extent.z * dot[2][2];
 	r1 = col1.m_extent.z;
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 7. Axis: col1 x (1) against col2 x
 	r = abs(d[2] * c[1][0] - d[1] * c[2][0]);
 	r0 = col1.m_extent.y * dot[2][0] + col1.m_extent.z * dot[1][0];
 	r1 = col2.m_extent.y * dot[0][2] + col2.m_extent.z * dot[0][1];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 8. Axis: col1 x (1) against col2 y
 	r = abs(d[2] * c[1][1] - d[1] * c[2][1]);
 	r0 = col1.m_extent.y * dot[2][1] + col1.m_extent.z * dot[1][1];
 	r1 = col2.m_extent.x * dot[0][2] + col2.m_extent.z * dot[0][0];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 9. Axis: col1 x (1) against col2 z
 	r = abs(d[2] * c[1][2] - d[1] * c[2][2]);
 	r0 = col1.m_extent.y * dot[2][2] + col1.m_extent.z * dot[1][2];
 	r1 = col2.m_extent.x * dot[0][1] + col2.m_extent.y * dot[0][0];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 10. Axis: col1 y (1) against col2 x
 	r = abs(d[0] * c[2][0] - d[2] * c[0][0]);
 	r0 = col1.m_extent.x * dot[2][0] + col1.m_extent.z * dot[0][0];
 	r1 = col2.m_extent.y * dot[1][2] + col2.m_extent.z * dot[1][1];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 	
 	// 11. Axis: col1 y (1) against col2 y
 	r = abs(d[0] * c[2][1] - d[2] * c[0][1]);
 	r0 = col1.m_extent.x * dot[2][1] + col1.m_extent.z * dot[0][1];
 	r1 = col2.m_extent.x * dot[1][2] + col2.m_extent.z * dot[1][0];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 12. Axis: col1 y (1) against col2 z
 	r = abs(d[0] * c[2][2] - d[2] * c[0][2]);
 	r0 = col1.m_extent.x * dot[2][2] + col1.m_extent.z * dot[0][2];
 	r1 = col2.m_extent.x * dot[1][1] + col2.m_extent.y * dot[1][0];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 13. Axis: col1 z (1) against col2 x
 	r = abs(d[1] * c[0][0] - d[0] * c[1][0]);
 	r0 = col1.m_extent.x * dot[1][0] + col1.m_extent.y * dot[0][0];
 	r1 = col2.m_extent.y * dot[2][2] + col2.m_extent.z * dot[2][1];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 	
 	// 14. Axis: col1 z (1) against col2 y
 	r = abs(d[1] * c[0][1] - d[0] * c[1][1]);
 	r0 = col1.m_extent.x * dot[1][1] + col1.m_extent.y * dot[0][1];
 	r1 = col2.m_extent.x * dot[2][2] + col2.m_extent.z * dot[2][0];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
 	// 15. Axis: col1 z (1) against col2 z
 	r = abs(d[1] * c[0][2] - d[0] * c[1][2]);
 	r0 = col1.m_extent.x * dot[1][2] + col1.m_extent.y * dot[0][2];
 	r1 = col2.m_extent.x * dot[2][1] + col2.m_extent.y * dot[2][0];
 
+	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
-		return -1.0f;
+	{
+		return false;
+	}
 
-	return 1.0f;
+#pragma region Contact Information
+/**************************************************************************
+	* The following code generates the contact details.
+	* SAT is only used as collision culling, hence this code is not needed.
+	
+	// search smallest interpenetration, excluding zero
+	float min = std::numeric_limits<float>::max();
+	int index = 0;
+	for (int i = 0; i < interpenetration.size(); i++)
+	{
+		if (interpenetration[i] < min && interpenetration[i] > 0.0f)
+		{
+			min = interpenetration[i];
+			index = i;
+		}
+	}
+	
+	// define wich type of contact occured and find the contact data
+	if (index < 3)
+	{
+		glm::vec3 axis = col1.GetAxes()[index];
+		// wich face is in contact
+		if (glm::dot(axis, difference) > 0.0f)
+		{
+			axis *= -1.0f;
+		}
+
+		// wich vertex is in contact (in col2 local coordinates)
+		glm::vec3 vertex = col2.GetExtents();
+		if (glm::dot(col2.GetAxes()[0], axis) < 0.0f) vertex.x = -vertex.x;
+		if (glm::dot(col2.GetAxes()[1], axis) < 0.0f) vertex.y = -vertex.y;
+		if (glm::dot(col2.GetAxes()[2], axis) < 0.0f) vertex.z = -vertex.z;
+
+		// convert to wolrd coordinates
+		
+		vertex = Math::rotateVector(vertex, col2.GetRotation());
+		vertex += col2.GetCenter();
+		vertex *= 1.0f;
+	}
+	else if (index < 6)
+	{
+		glm::vec3 axis = col2.GetAxes()[index - 3];
+		// wich face is in contact
+		if (glm::dot(axis, difference * -1.0f) > 0.0f)
+		{
+			axis *= -1.0f;
+		}
+
+		// wich vertex is in contact (in col2 local coordinates)
+		glm::vec3 vertex = col1.GetExtents();
+		if (glm::dot(col1.GetAxes()[0], axis) < 0.0f) vertex.x = -vertex.x;
+		if (glm::dot(col1.GetAxes()[1], axis) < 0.0f) vertex.y = -vertex.y;
+		if (glm::dot(col1.GetAxes()[2], axis) < 0.0f) vertex.z = -vertex.z;
+
+		// convert to wolrd coordinates
+
+		vertex = Math::rotateVector(vertex, col1.GetRotation());
+		vertex += col1.GetCenter();
+		vertex *= 1.0f;
+	}
+	else if (index < 15)
+	{
+		// find axis of contact
+		index -= 6;
+
+	}
+*********************************************************************************/
+#pragma endregion
+	
+	return true;
 }
 
-void GameManager::collisionResponse(RigidBody& g1, RigidBody& g2, float instersection)
+void GameManager::collisionResponse(RigidBody& g1, RigidBody& g2)
 {
 	glm::vec3 v1 = g1.GetVelocity();
 	glm::vec3 v2 = g2.GetVelocity();
@@ -523,16 +642,4 @@ void GameManager::collisionResponse(RigidBody& g1, RigidBody& g2, float insterse
 	// set new velocity / apply impulse to objects
 	g1.SetVelocity(v1 + pv * im1);
 	g2.SetVelocity(v2 + pv * -im2);
-
-
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	// only for central elastic pulse
-	//glm::vec3 u1 = ((m1 - m2) * v1 + 2.0f * m2 * v2) / (m1 + m2); // velocity after collisison
-	////u1 = u1 * collisionNormal;
-	//g1.SetVelocity(u1);
-	//
-	//glm::vec3 u2 = ((m2 - m1) * v2 + 2.0f * m1 * v1) / (m1 + m2); // velocity after collisison
-	////u2 = u2 * collisionNormal;
-	//g2.SetVelocity(u2);
-	/////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -4,7 +4,6 @@
 // Date: 06/02/2017			  //
 ////////////////////////////////
 
-#include <memory>
 
 #include "Defs.h"
 #include "GameManager.h"
@@ -44,7 +43,9 @@ void Reshape(int width, int height)
 
 int main(void)
 {
-	gameManager = &GameManager::getInstance();
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+	gameManager = &GameManager::GetInstance();
 	
 	// Initialize GLUT
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);

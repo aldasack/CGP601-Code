@@ -23,9 +23,11 @@ namespace Collision
 		~BoxCollider();
 		void Update() override;
 		std::array<glm::vec3, 8> GetEdges() const;
-		glm::vec3& GetCenter() const;
-		std::array<glm::vec3, 3>& GetAxes() const;
-		glm::vec3& GetExtents() const;
+		glm::vec3 GetCenter() const;
+		std::array<glm::vec3, 3> GetAxes() const;
+		glm::vec3 GetExtents() const;
+		// Returns rotation as normalized quaternion
+		glm::quat GetRotation() const;
 
 	//private:
 
@@ -38,6 +40,7 @@ namespace Collision
 		// first approach
 		std::array<glm::vec3, 8> m_edges;
 		std::array<glm::vec3, 8> m_transformedEdges;
+		glm::quat m_rotation;
 		
 	};
 }

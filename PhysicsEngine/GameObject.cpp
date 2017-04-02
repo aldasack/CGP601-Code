@@ -141,8 +141,8 @@ void GameObject::shutdown()
 	if (m_pRigidbody)
 	{
 		m_pRigidbody->Shutdown();
-		m_pRigidbody = nullptr;
 		delete m_pRigidbody;
+		m_pRigidbody = nullptr;
 	}
 }
 

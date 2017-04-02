@@ -9,7 +9,7 @@
 // Date: 15/02/2017			  //
 ////////////////////////////////
 
-#include <vector>
+#include <time.h>
 #include <chrono>
 #include <Windows.h>
 
@@ -19,7 +19,7 @@
 class GameManager
 {
 public:
-	static GameManager& getInstance()
+	static GameManager& GetInstance()
 	{
 		if (!s_instance)
 			s_instance = new GameManager();
@@ -34,7 +34,7 @@ public:
 	//int Run();
 	void Exit(int);
 
-	void AddRigidBody(RigidBody* rigidbody);
+	void AddRigidBody(RigidBody& rigidbody);
 
 private:
 	const unsigned int m_windowHeight = 768;
@@ -60,6 +60,7 @@ private:
 	std::vector<RigidBody*> m_rigidBodys;
 	// stores all GameObjects to draw them
 	std::vector<GameObject*> m_gameObjects;
+	PhysicsManager* m_pPhysicsManager;
 
 	GameManager();
 	void clearKeyState();
@@ -67,9 +68,9 @@ private:
 	//void drawPlane();
 	void drawText(glm::vec2 position, glm::vec3 color, std::string text);
 	void update();
-	float sphereCollisionDetection(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
-	float boxCollisionDetection(const Collision::BoxCollider & col1, const Collision::BoxCollider & col2);
-	void collisionResponse(RigidBody& g1, RigidBody& g2, float intersection);
+	bool spheresIntersect(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
+	bool boxIntersects(const Collision::BoxCollider & col1, const Collision::BoxCollider & col2);
+	void collisionResponse(RigidBody& g1, RigidBody& g2);
 
 	static GameManager* s_instance;
 };

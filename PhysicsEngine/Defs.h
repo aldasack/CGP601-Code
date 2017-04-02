@@ -15,6 +15,7 @@
 #include <exception>
 #include <array>
 #include <vector>
+#include <memory>
 
 #include "glm\glm.hpp"
 #include "glm\gtc\quaternion.hpp"
@@ -32,6 +33,7 @@ namespace Constants
 	const float Pi = 4.0f * atan(1.0f);
 	const float Deg2Rad = Pi / 180.0f;
 	const float Rad2Deg = 180.0f / Pi;
+	const float Precision = 0.0001f;
 }
 
 //namespace Time
@@ -55,7 +57,7 @@ namespace Math
 	{
 		// check if quaternion is normalized
 		float length = glm::length(quat);
-		DBG_ASSERT(abs(length - 1.0f) < 0.001f);
+		DBG_ASSERT(abs(length - 1.0f) < Constants::Precision);
 
 		glm::vec3 result;
 		
@@ -83,26 +85,6 @@ namespace Collision
 	class Collider;
 	class SphereCollider;
 	class BoxCollider;
-
-	/*class Collider
-	{
-	protected: ColliderType m_colliderType;
-	public: ColliderType GetColliderType() { return m_colliderType; };
-			virtual void Update() = 0;
-	};
-
-	class SphereCollider : Collider
-	{
-	private:
-		glm::vec3 position;
-		float radius;
-	};
-
-	class BoxCollider : Collider
-	{
-	private:
-		glm::vec3 points[4];
-	};*/
 }
 
 namespace Colors
@@ -115,6 +97,7 @@ namespace Colors
 
 class RigidBody;
 class GameManager;
+class PhysicsManager;
 class GameObject;
 class Sphere;
 class Box;
