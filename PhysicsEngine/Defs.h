@@ -77,6 +77,7 @@ namespace Math
 	}
 }
 
+//TODO: methods calculating inertia tensor for different shapes
 
 namespace Collision
 {
@@ -85,6 +86,7 @@ namespace Collision
 	class Collider;
 	class SphereCollider;
 	class BoxCollider;
+	class MeshCollider;
 }
 
 namespace Colors

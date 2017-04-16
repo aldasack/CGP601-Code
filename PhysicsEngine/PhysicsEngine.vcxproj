@@ -155,6 +155,7 @@
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="MeshCollider.cpp" />
     <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="RigidBody.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="Defs.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="MeshCollider.h" />
     <ClInclude Include="PhysicsManager.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="RigidBody.h" />

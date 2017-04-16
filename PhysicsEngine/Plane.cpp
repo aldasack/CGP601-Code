@@ -8,7 +8,7 @@
 
 #include "RigidBody.h"
 
-Plane::Plane() : GameObject(Collision::ColliderType::Plane)
+Plane::Plane() : GameObject()
 {
 	m_pRigidbody->IsStatic(true);
 	m_normal.x = 0.0f;
@@ -16,12 +16,12 @@ Plane::Plane() : GameObject(Collision::ColliderType::Plane)
 	m_normal.z = 0.0f;
 }
 
-Plane::Plane(const glm::vec3 position) : GameObject(Collision::ColliderType::Plane, position)
+Plane::Plane(const glm::vec3 position) : GameObject(position)
 {
 	m_pRigidbody->IsStatic(true);
 }
 
-Plane::Plane(const glm::vec3 position, const glm::vec3 scale) : GameObject(Collision::ColliderType::Plane, position)
+Plane::Plane(const glm::vec3 position, const glm::vec3 scale) : GameObject(position)
 {
 	m_pRigidbody->IsStatic(true);
 }

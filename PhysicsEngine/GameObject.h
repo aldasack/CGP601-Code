@@ -14,9 +14,9 @@
 class GameObject
 {
 public:
-	GameObject(Collision::ColliderType colliderType);
-	GameObject(Collision::ColliderType colliderType, glm::vec3 position);
-	GameObject(Collision::ColliderType colliderType, glm::vec3 position, glm::vec3 rotation);
+	GameObject();
+	GameObject(glm::vec3 position);
+	GameObject(glm::vec3 position, glm::vec3 rotation);
 	~GameObject();
 	virtual void Shutdown() = 0;
 	virtual void Draw() = 0;
@@ -35,6 +35,7 @@ public:
 	glm::vec3 GetAcceleration() const;
 	glm::vec3 GetVelocity() const;
 	float GetMass() const;
+	std::vector<glm::vec3> GetVertices() const;
 	//Collision::SphereCollider GetCollider() const;
 
 	bool IsStatic() const;

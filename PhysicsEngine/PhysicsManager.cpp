@@ -10,6 +10,7 @@
 
 #include "RigidBody.h"
 #include "SphereCollider.h"
+#include "MeshCollider.h"
 #include "BoxCollider.h"
 
 PhysicsManager* PhysicsManager::s_instance = nullptr;
@@ -59,7 +60,11 @@ void PhysicsManager::Update(float deltaTime)
 				{
 					if (boxIntersects(m_rigidBodies[i]->GetBoxCollider(), m_rigidBodies[j]->GetBoxCollider()))
 					{
-						collisionResponse(*m_rigidBodies[i], *m_rigidBodies[j]);
+						if (meshIntersects(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider()))
+						{
+							//minkowskiSum(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider());
+							collisionResponse(*m_rigidBodies[i], *m_rigidBodies[j]);
+						}
 					}
 				}
 			}
@@ -356,6 +361,205 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 #pragma endregion
 
 	return true;
+}
+
+bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
+{
+	std::vector<glm::vec3>& A = col1.GetVertices();
+	std::vector<glm::vec3>& B = col2.GetVertices();
+
+	DBG_ASSERT(A.size() != 0);
+	DBG_ASSERT(B.size() != 0);
+
+	std::vector<glm::vec3> simplex;
+	glm::vec3 a = A[0] - B[0];
+	simplex.push_back(a);
+	glm::vec3 direction = -a; // from point a to the origin
+	
+	while (1)
+	{
+		a = support(direction, A) - support(-direction, B);
+		if (glm::dot(a, direction) < 0)
+		{
+			// No intersection
+			// furthest point reached, can not go further than the origin
+			return false;
+		}
+		else
+		{
+			simplex.push_back(a);
+			if (doSimplex(simplex, direction))
+			{
+				return true;
+			}
+		}
+	}
+
+
+}
+
+glm::vec3 PhysicsManager::support(const glm::vec3& direction, const std::vector<glm::vec3>& points)
+{
+	glm::vec3 a;
+	float max = glm::dot(direction, points[0]);//std::numeric_limits<float>::max() * -1.0f;
+	float dot = 0.0f;
+	int index = 0;
+	for (size_t i = 1; i < points.size(); i++)
+	{
+		dot = glm::dot(direction, points[i]);
+		if (dot > max)
+		{
+			max = dot;
+			index = i;
+		}	
+	}
+
+	return points[index];
+}
+
+bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direction)
+{
+	// a x b x a = cross(cross(a,b),a)
+	glm::vec3 tmpDirection = direction;
+	size_t size = simplex.size();
+	// simplex can not be empty
+	DBG_ASSERT(size != 0);
+
+	// get the last added point
+	glm::vec3& A = simplex[size - 1];
+
+	switch (size)
+	{
+	// case 1 wont appear, because doSimplex will always be called after atleast 2 points had been added to the simplex list
+	// Simpex is a point (A)
+	case 1:
+	{
+		direction = -A;
+		break;
+	}
+		
+	// Simplex is a line (AB)
+	case 2:
+	{
+		glm::vec3& B = simplex[0];
+
+		if (glm::dot(B - A, -A) > 0)
+		{
+			// is between A and B
+			direction = glm::cross(glm::cross(B - A, -A), B - A);
+		}
+		else
+		{
+			// is behind A
+			direction = -A;
+		}
+		break;
+	}
+
+	// Simplex is a triangle (ABC)
+	case 3:
+	{
+		glm::vec3& B = simplex[1];
+		glm::vec3& C = simplex[0];
+		// cross-product / normal of the triangle
+		glm::vec3 n = glm::cross(B - A, C - A);
+
+		if (glm::dot(glm::cross(n, C - A), -A) > 0)
+		{
+			if (glm::dot(C - A, -A) > 0)
+			{
+				direction = glm::cross(glm::cross(C - A, -A), C - A);
+			}
+			else
+			{
+#pragma region star
+				if (glm::dot(B - A, -A) > 0)
+				{
+					direction = glm::cross(glm::cross(B - A, -A), B - A);
+				}
+				else
+				{
+					direction = -A;
+				}
+#pragma endregion
+			}
+		}
+		else
+		{
+			if (glm::dot(glm::cross(B - A, n), -A) > 0)
+			{
+#pragma region star
+				if (glm::dot(B - A, -A) > 0)
+				{
+					direction = glm::cross(glm::cross(B - A, -A), B - A);
+				}
+				else
+				{
+					direction = -A;
+				}
+#pragma endregion
+			}
+			else
+			{
+				// above triangle
+				if (glm::dot(n, -A) > 0)
+				{
+					direction = n;
+				}
+				// under triangle
+				else
+				{
+					direction = -n;
+				}
+			}
+		}
+		break;
+	}
+		
+	//// Simplex is a tetrahedron (ABCD)
+	case 4:
+	{
+		return true;
+		break;
+	}
+				
+	}
+
+	//DBG_ASSERT(direction != tmpDirection);
+	return false;
+}
+
+bool PhysicsManager::minkowskiSum(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
+{
+	std::vector<glm::vec3>& v1 = col1.GetVertices();
+	std::vector<glm::vec3>& v2 = col2.GetVertices();
+	std::vector<glm::vec3> v3;
+	
+	// subtracting each point (minkowskik difference)
+	for (size_t i = 0; i < v1.size(); i++)
+	{
+		for (size_t j = 0; j < v2.size(); j++)
+		{
+			bool b = false;
+			glm::vec3 tmp = v1[i] - v2[j];
+			for (size_t k = 0; k < v3.size(); k++)
+			{
+				if (tmp == v3[k])
+				{
+					b = true;
+					break;
+				}
+					
+			}
+			if(!b)
+				v3.push_back(v1[i] - v2[j]);
+		}
+	}
+
+	// checking if new shape contains the origin (0,0,0)
+
+
+	return false;
 }
 
 void PhysicsManager::collisionResponse(RigidBody& g1, RigidBody& g2)

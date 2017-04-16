@@ -9,9 +9,10 @@
 #include "Collider.h"
 #include "SphereCollider.h"
 #include "BoxCollider.h"
+#include "MeshCollider.h"
 #include "PhysicsManager.h"
 
-RigidBody::RigidBody(Collision::ColliderType colliderType)
+RigidBody::RigidBody()
 {
 	m_position.x = 0.0f;
 	m_position.y = 0.0f;
@@ -60,14 +61,13 @@ RigidBody::RigidBody(Collision::ColliderType colliderType)
 	m_linearDamping = 0.99f;
 	m_angularDamping = 0.99f;
 
-	// setting up the collider
-	m_colliderType = colliderType;
-
 	m_pSphereCollider = new Collision::SphereCollider(*this);
 	m_pSphereCollider->SetPosition(m_position);
 	m_pSphereCollider->SetRadius(0.5f);
 
 	m_pBoxCollider = new Collision::BoxCollider(*this);
+
+	m_pMeshCollider = new Collision::MeshCollider(*this);
 
 	// register RigidBody with the PhysicsManager
 	PhysicsManager::GetInstance().AddRigidBody(*this);
@@ -147,6 +147,7 @@ void RigidBody::Update(float dt)
 	// Updating Colliders to transform them the same way as the rigidbody
 	m_pSphereCollider->Update();
 	m_pBoxCollider->Update();
+	m_pMeshCollider->Update();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Testcase for Objective 1: Gravity on Sphere
@@ -167,14 +168,22 @@ void RigidBody::Shutdown()
 {
 	if (m_pSphereCollider)
 	{
+		m_pSphereCollider->Shutdown();
 		delete m_pSphereCollider;
 		m_pSphereCollider = nullptr;
 		
 	}
 	if (m_pBoxCollider)
 	{
+		m_pBoxCollider->Shutdown();
 		delete m_pBoxCollider;
 		m_pBoxCollider = nullptr;
+	}
+	if (m_pMeshCollider)
+	{
+		m_pMeshCollider->Shutdown();
+		delete m_pMeshCollider;
+		m_pMeshCollider = nullptr;
 	}
 }
 
@@ -343,17 +352,20 @@ void RigidBody::Rotate(const glm::vec3& rotation)
 
 Collision::SphereCollider& RigidBody::GetSphereCollider() const
 {
+	DBG_ASSERT(m_pSphereCollider != nullptr);
 	return *m_pSphereCollider;
 }
 
 Collision::BoxCollider& RigidBody::GetBoxCollider() const
 {
+	DBG_ASSERT(m_pBoxCollider != nullptr);
 	return *m_pBoxCollider;
 }
 
-Collision::ColliderType RigidBody::GetColliderType() const
+Collision::MeshCollider& RigidBody::GetMeshCollider() const
 {
-	return m_colliderType;
+	DBG_ASSERT(m_pMeshCollider != nullptr);
+	return *m_pMeshCollider;
 }
 
 void RigidBody::resetAccumulators()

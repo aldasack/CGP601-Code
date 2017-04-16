@@ -63,6 +63,9 @@
     <ClCompile Include="PhysicsManager.cpp">
       <Filter>Quelldateien\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="MeshCollider.cpp">
+      <Filter>Quelldateien\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Defs.h">
@@ -99,6 +102,9 @@
       <Filter>Headerdateien\Physics</Filter>
     </ClInclude>
     <ClInclude Include="PhysicsManager.h">
+      <Filter>Headerdateien\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshCollider.h">
       <Filter>Headerdateien\Physics</Filter>
     </ClInclude>
   </ItemGroup>

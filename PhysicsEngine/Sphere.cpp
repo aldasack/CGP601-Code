@@ -7,7 +7,7 @@
 #include "Sphere.h"
 #include "RigidBody.h"
 
-Sphere::Sphere() : GameObject(Collision::ColliderType::Sphere)
+Sphere::Sphere() : GameObject()
 {
 	m_radius = 0.5f;
 	//m_collider.position = m_pRigidbody->GetPosition();
@@ -16,7 +16,7 @@ Sphere::Sphere() : GameObject(Collision::ColliderType::Sphere)
 	setInertiaTensor();
 }
 
-Sphere::Sphere(const glm::vec3 position) : GameObject(Collision::ColliderType::Sphere, position)
+Sphere::Sphere(const glm::vec3 position) : GameObject()
 {
 	m_radius = 0.5f;
 	/*m_collider.position = position;
@@ -26,7 +26,7 @@ Sphere::Sphere(const glm::vec3 position) : GameObject(Collision::ColliderType::S
 	setInertiaTensor();
 }
 
-Sphere::Sphere(const glm::vec3 position, const float radius) : GameObject(Collision::ColliderType::Sphere, position)
+Sphere::Sphere(const glm::vec3 position, const float radius) : GameObject(position)
 {
 	m_radius = radius;
 	/*m_collider.position = m_pRigidbody->GetPosition();

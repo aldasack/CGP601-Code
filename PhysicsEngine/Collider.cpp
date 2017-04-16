@@ -8,7 +8,7 @@
 
 using namespace Collision;
 
-Collider::Collider(RigidBody& rigidBody)
+Collider::Collider(const RigidBody& rigidBody)
 {
 	m_pRigidBody = &rigidBody;
 }
@@ -18,6 +18,7 @@ Collider::~Collider(){}
 void Collider::Shutdown()
 {
 	// should be deleted by the owning GameObject
+	// setting to nullptr is not necessary
 	m_pRigidBody = nullptr;
 }
 

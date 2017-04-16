@@ -21,6 +21,10 @@ public:
 	~Box();
 	void Shutdown() override;
 	void Draw() override;
+
+private:
+	// fills the vertices list with vectors which represent a box
+	void setVertices();
 };
 
 #endif // !_BOX_H

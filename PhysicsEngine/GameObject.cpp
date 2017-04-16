@@ -9,18 +9,18 @@
 #include "RigidBody.h"
 #include "SphereCollider.h"
 
-GameObject::GameObject(Collision::ColliderType colliderType)
+GameObject::GameObject()
 {
 	m_color = { 1.0f, 1.0f, 1.0f };
-	m_pRigidbody = new RigidBody(colliderType);
+	m_pRigidbody = new RigidBody();
 }
 
-GameObject::GameObject(Collision::ColliderType colliderType, glm::vec3 position) : GameObject(colliderType)
+GameObject::GameObject(glm::vec3 position) : GameObject()
 {
 	m_pRigidbody->SetPosition(position);
 }
 
-GameObject::GameObject(Collision::ColliderType colliderType, glm::vec3 position, glm::vec3 rotation) : GameObject(colliderType, position)
+GameObject::GameObject(glm::vec3 position, glm::vec3 rotation) : GameObject()
 {
 	m_pRigidbody->SetEulerRotation(rotation);
 }
@@ -84,6 +84,12 @@ glm::vec3 GameObject::GetVelocity() const
 float GameObject::GetMass() const
 {
 	return m_pRigidbody->GetMass();
+}
+
+std::vector<glm::vec3> GameObject::GetVertices() const
+{
+	DBG_ASSERT(m_vertices.size() > 0);
+	return m_vertices;
 }
 
 //Collision::SphereCollider GameObject::GetCollider() const

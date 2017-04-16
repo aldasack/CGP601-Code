@@ -17,7 +17,7 @@ namespace Collision
 	class Collider
 	{
 	public:
-		Collider(RigidBody& rigidBody);
+		Collider(const RigidBody& rigidBody);
 		~Collider();
 		void Shutdown();
 		ColliderType GetColliderType() const;
@@ -25,7 +25,7 @@ namespace Collision
 
 	protected:
 		ColliderType m_colliderType;
-		RigidBody* m_pRigidBody;
+		const RigidBody* m_pRigidBody;
 
 	};
 }

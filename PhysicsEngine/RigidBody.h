@@ -16,7 +16,7 @@
 class RigidBody
 {
 public:
-	RigidBody(Collision::ColliderType colliderType);
+	RigidBody();
 	//RigidBody(const glm::vec3 position);
 	~RigidBody();
 	void Update(float dt);
@@ -61,7 +61,7 @@ public:
 
 	Collision::SphereCollider& GetSphereCollider() const;
 	Collision::BoxCollider& GetBoxCollider() const;
-	Collision::ColliderType GetColliderType() const;
+	Collision::MeshCollider& GetMeshCollider() const;
 
 private:
 	glm::vec3 m_position;
@@ -92,7 +92,7 @@ private:
 
 	Collision::SphereCollider* m_pSphereCollider;
 	Collision::BoxCollider* m_pBoxCollider;
-	Collision::ColliderType m_colliderType;
+	Collision::MeshCollider* m_pMeshCollider;
 
 	// Resets the force and torque accumulators after each iteration
 	void resetAccumulators();

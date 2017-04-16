@@ -53,6 +53,9 @@ void GameManager::Shutdown()
 			m_gameObjects[i] = nullptr;
 		}
 	}
+	
+	m_pPhysicsManager->Shutdown();
+
 	for (size_t i = 0; i < m_rigidBodys.size(); i++)
 	{
 		// the rigidbodys gets deleted when corresponding gameobject gets deleted
@@ -103,7 +106,7 @@ void GameManager::InitScene()
 	pos1.z = 5.0;
 
 	glm::vec3 pos2;
-	pos2.x = 0.0f;
+	pos2.x = -0.5f;
 	pos2.y = -0.5f;
 	pos2.z = 0.0;
 
@@ -114,23 +117,23 @@ void GameManager::InitScene()
 	m_gameObjects[1]->SetColor(Colors::Blue);
 	m_gameObjects.push_back(new Box(pos2));
 	m_gameObjects[2]->SetColor(Colors::White);
-	m_gameObjects[2]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
+	m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
 
 	m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -5.0f));
 	//m_gameObjects[1]->SetColor(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	//glm::vec3 color;
-	//for (int i = 0; i < 9; i++)
-	//{
-	//	pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-	//	//pos2.y = static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 5.0f));
-	//	pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-	//	color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-	//	color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-	//	color.z = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-	//	m_gameObjects.push_back(new Sphere(pos2));
-	//	m_gameObjects[i + 2]->SetColor(color);
-	//}
+	glm::vec3 color;
+	for (int i = 0; i < 9; i++)
+	{
+		pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
+		//pos2.y = static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 5.0f));
+		pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
+		color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+		color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+		color.z = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+		m_gameObjects.push_back(new Box(pos2));
+		m_gameObjects[i + 3]->SetColor(color);
+	}
 }
 
 void GameManager::KeyboardHandle(unsigned char key, int x, int y)
