@@ -21,8 +21,3 @@ void Collider::Shutdown()
 	// setting to nullptr is not necessary
 	m_pRigidBody = nullptr;
 }
-
-ColliderType Collider::GetColliderType() const
-{
-	return m_colliderType;
-}

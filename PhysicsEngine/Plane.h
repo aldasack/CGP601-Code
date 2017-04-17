@@ -22,8 +22,11 @@ public:
 	void Shutdown() override;
 
 	void Draw() override;
+
 private:
 	glm::vec3 m_normal;
+
+	void setVertices();
 };
 
 #endif // !_PLANE_H

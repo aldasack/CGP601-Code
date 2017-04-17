@@ -70,3 +70,8 @@ void Sphere::setInertiaTensor()
 	tensor *= (2.0f / 5.0f) * m_pRigidbody->GetMass() * pow(m_radius, 2);
 	m_pRigidbody->SetInertiaTensor(tensor);
 }
+
+void Sphere::setVertices()
+{
+
+}

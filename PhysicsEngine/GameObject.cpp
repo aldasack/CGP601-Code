@@ -12,7 +12,8 @@
 GameObject::GameObject()
 {
 	m_color = { 1.0f, 1.0f, 1.0f };
-	m_pRigidbody = new RigidBody();
+	m_scale = { 1.0f, 1.0f, 1.0f };
+	m_pRigidbody = new RigidBody(*this);
 }
 
 GameObject::GameObject(glm::vec3 position) : GameObject()
@@ -29,9 +30,7 @@ GameObject::~GameObject(){}
 
 void GameObject::Update(float dt)
 {
-	//m_color = Colors::White;
 	m_pRigidbody->Update(dt);
-	//m_collider.position = m_pRigidbody->GetPosition();
 }
 
 void GameObject::SetPosition(const glm::vec3& position)
@@ -92,11 +91,6 @@ std::vector<glm::vec3> GameObject::GetVertices() const
 	return m_vertices;
 }
 
-//Collision::SphereCollider GameObject::GetCollider() const
-//{
-//	return m_collider;
-//}
-
 bool GameObject::IsStatic() const
 {
 	return m_pRigidbody->IsStatic();
@@ -116,15 +110,6 @@ void GameObject::UseGravity(const bool useGravity)
 {
 	m_pRigidbody->UseGravity(useGravity);
 }
-
-//glm::vec3 GameObject::GetAcceleration() const
-//{
-//	return;
-//}
-//glm::vec3 GameObject::GetVelocity() const
-//{
-//
-//}
 
 void GameObject::AddForce(const glm::vec3& force)
 {
@@ -168,4 +153,5 @@ void GameObject::prepareDraw()
 	
 	glTranslatef(pos.x, pos.y, pos.z);
 	glRotatef(rotation.w * Constants::Rad2Deg, rotation.x, rotation.y, rotation.z);
+	glScalef(m_scale.x, m_scale.y, m_scale.z);
 }

@@ -106,7 +106,7 @@ void GameManager::InitScene()
 	pos1.z = 5.0;
 
 	glm::vec3 pos2;
-	pos2.x = -0.5f;
+	pos2.x = 0.0f;
 	pos2.y = -0.5f;
 	pos2.z = 0.0;
 
@@ -118,15 +118,21 @@ void GameManager::InitScene()
 	m_gameObjects.push_back(new Box(pos2));
 	m_gameObjects[2]->SetColor(Colors::White);
 	m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
+	pos1.y = 1.1f;
+	/*m_gameObjects.push_back(new Box(pos1));
+	m_gameObjects[3]->SetColor(Colors::Red);
+	m_gameObjects[3]->SetVelocity(glm::vec3(0.0f, 0.0f, -1.0f));
+	m_gameObjects[3]->UseGravity(false);*/
 
-	m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -5.0f));
+	m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -1.0f));
+	//m_gameObjects[1]->AddTorque(glm::vec3(0.0f, 10.0f, 0.0f));
 	//m_gameObjects[1]->SetColor(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	glm::vec3 color;
 	for (int i = 0; i < 9; i++)
 	{
 		pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-		//pos2.y = static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 5.0f));
+		pos2.y = static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 5.0f));
 		pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
 		color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
 		color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
@@ -206,8 +212,8 @@ void GameManager::draw()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	// looking from above
-	gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-	//gluLookAt(0.0, 2.5, 5.0, 0.0, 2.5, 1.0, 0.0, 1.0, 0.0);
+	//gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
 
 
 	//DrawCube();

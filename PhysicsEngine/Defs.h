@@ -1,13 +1,14 @@
-#pragma once
-
-#ifndef _DEFS_H
-#define _DEFS_H
-
 ////////////////////////////////
 // Name: RigidBody.h		  //
 // Author: Alexander Kocourek //
 // Date: 06/02/2017			  //
 ////////////////////////////////
+
+#pragma once
+
+#ifndef _DEFS_H
+#define _DEFS_H
+
 
 #include <cmath>
 #include <glut.h>

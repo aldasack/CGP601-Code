@@ -12,7 +12,7 @@
 #include "MeshCollider.h"
 #include "PhysicsManager.h"
 
-RigidBody::RigidBody()
+RigidBody::RigidBody(GameObject& gameObject)
 {
 	m_position.x = 0.0f;
 	m_position.y = 0.0f;
@@ -61,12 +61,13 @@ RigidBody::RigidBody()
 	m_linearDamping = 0.99f;
 	m_angularDamping = 0.99f;
 
+	DBG_ASSERT(&gameObject != nullptr);
+	m_pGameObject = &gameObject;
+
 	m_pSphereCollider = new Collision::SphereCollider(*this);
-	m_pSphereCollider->SetPosition(m_position);
-	m_pSphereCollider->SetRadius(0.5f);
-
+	//m_pSphereCollider->SetPosition(m_position);
+	//m_pSphereCollider->SetRadius(0.5f);
 	m_pBoxCollider = new Collision::BoxCollider(*this);
-
 	m_pMeshCollider = new Collision::MeshCollider(*this);
 
 	// register RigidBody with the PhysicsManager
@@ -148,20 +149,6 @@ void RigidBody::Update(float dt)
 	m_pSphereCollider->Update();
 	m_pBoxCollider->Update();
 	m_pMeshCollider->Update();
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Testcase for Objective 1: Gravity on Sphere
-	// get time of fall.
-	// s = 6m; a = 9.81 m/s^2 => t ~ 1.1s
-	//time += dt;
-	//if (m_position.y <= -0.5f && bo == false) // -1.0 is the height of the plane, radius is 0.5m
-	//{
-	//	bo = true;
-	//	//std::cout << glutGet(GLUT_ELAPSED_TIME) * 0.001f << std::endl;
-	//	std::cout << "Time of fall: " << time << std::endl;
-	//	std::cout << "Velcoity: " << m_velocity.y << std::endl;
-	//}
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void RigidBody::Shutdown()
@@ -171,7 +158,6 @@ void RigidBody::Shutdown()
 		m_pSphereCollider->Shutdown();
 		delete m_pSphereCollider;
 		m_pSphereCollider = nullptr;
-		
 	}
 	if (m_pBoxCollider)
 	{
@@ -257,7 +243,7 @@ glm::vec4 RigidBody::GetAxisAngleRotation()
 	m_rotation = glm::normalize(m_rotation);
 	glm::vec4 rotation;
 	float s = sqrt(1 - m_rotation.w * m_rotation.w); // error when w is 1 !?
-	if (abs(s) > 0.001f)
+	if (abs(s) > Constants::Precision)
 	{
 		rotation.x = m_rotation.x / s;
 		rotation.y = m_rotation.y / s;
@@ -303,11 +289,6 @@ void RigidBody::SetInertiaTensor(const glm::mat3& tensor)
 	m_inertiaTensor = tensor;
 	m_inverseInertiaTensor = glm::inverse(m_inertiaTensor);
 }
-
-//void RigidBody::SetForce(const glm::vec3& force)
-//{
-//	m_force = force;
-//}
 
 void RigidBody::AddForce(const glm::vec3& force)
 {
@@ -366,6 +347,12 @@ Collision::MeshCollider& RigidBody::GetMeshCollider() const
 {
 	DBG_ASSERT(m_pMeshCollider != nullptr);
 	return *m_pMeshCollider;
+}
+
+GameObject& RigidBody::GetGameObject() const
+{
+	DBG_ASSERT(m_pGameObject != nullptr);
+	return *m_pGameObject;
 }
 
 void RigidBody::resetAccumulators()

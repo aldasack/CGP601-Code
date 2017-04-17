@@ -1,13 +1,14 @@
-#pragma once
-
-#ifndef _OBJECT_H
-#define _OBJECT_H
-
 ////////////////////////////////
 // Name: GameObject.h		  //
 // Author: Alexander Kocourek //
 // Date: 16/02/2017			  //
 ////////////////////////////////
+
+#pragma once
+
+#ifndef _OBJECT_H
+#define _OBJECT_H
+
 
 #include "Defs.h"
 

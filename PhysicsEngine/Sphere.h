@@ -29,6 +29,7 @@ private:
 	const int m_segments = 25;
 	// Calculates the inertia tensor depending on radius and mass;
 	void setInertiaTensor();
+	void setVertices();
 };
 
 #endif // !_SPHERE_H_

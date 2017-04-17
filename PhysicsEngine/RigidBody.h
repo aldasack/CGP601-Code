@@ -1,22 +1,21 @@
-#pragma once
-
-#ifndef _RIGIDBODY_H
-#define _RIGIDBODY_H
-
 ////////////////////////////////
 // Name: RigidBody.h		  //
 // Author: Alexander Kocourek //
 // Date: 06/02/2017			  //
 ////////////////////////////////
 
-#include <iostream>
+#pragma once
+
+#ifndef _RIGIDBODY_H
+#define _RIGIDBODY_H
+
 
 #include "Defs.h"
 
 class RigidBody
 {
 public:
-	RigidBody();
+	RigidBody(GameObject& gameObject);
 	//RigidBody(const glm::vec3 position);
 	~RigidBody();
 	void Update(float dt);
@@ -62,6 +61,8 @@ public:
 	Collision::SphereCollider& GetSphereCollider() const;
 	Collision::BoxCollider& GetBoxCollider() const;
 	Collision::MeshCollider& GetMeshCollider() const;
+	
+	GameObject& GetGameObject() const;
 
 private:
 	glm::vec3 m_position;
@@ -93,6 +94,8 @@ private:
 	Collision::SphereCollider* m_pSphereCollider;
 	Collision::BoxCollider* m_pBoxCollider;
 	Collision::MeshCollider* m_pMeshCollider;
+
+	GameObject* m_pGameObject;
 
 	// Resets the force and torque accumulators after each iteration
 	void resetAccumulators();

@@ -22,9 +22,9 @@ namespace Collision
 		~MeshCollider();
 		void Shutdown();
 		void Update() override;
+		void AdjustCollider(std::vector<glm::vec3>& vertices);
 		std::vector<glm::vec3>& GetVertices() const;
 		void SetVertices(std::vector<glm::vec3>& vertices);
-
 
 	private:
 		// Reference to the local coordinates from the GameObject

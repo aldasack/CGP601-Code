@@ -60,6 +60,11 @@ void BoxCollider::Update()
 	// TODO: Scale
 }
 
+void BoxCollider::AdjustCollider()
+{
+	// TODO: use vertices to generate fitting bounding box
+}
+
 std::array<glm::vec3, 8> BoxCollider::GetEdges() const
 {
 	return m_transformedEdges;

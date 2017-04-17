@@ -22,6 +22,7 @@ namespace Collision
 		BoxCollider(RigidBody& rigidbody/*, const glm::vec3& scale*/);
 		~BoxCollider();
 		void Update() override;
+		void AdjustCollider();
 		std::array<glm::vec3, 8> GetEdges() const;
 		glm::vec3 GetCenter() const;
 		std::array<glm::vec3, 3> GetAxes() const;

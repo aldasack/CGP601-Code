@@ -54,13 +54,14 @@ void PhysicsManager::Update(float deltaTime)
 			if (i == 0 || j == 0)
 				continue;
 			/*******************************************************************************/
-			if (&m_rigidBodies[i] != &m_rigidBodies[j])
+			//if (&m_rigidBodies[i] != &m_rigidBodies[j])
+			if(i != j)
 			{
 				if (spheresIntersect(m_rigidBodies[i]->GetSphereCollider(), m_rigidBodies[j]->GetSphereCollider()))
 				{
 					if (boxIntersects(m_rigidBodies[i]->GetBoxCollider(), m_rigidBodies[j]->GetBoxCollider()))
 					{
-						if (meshIntersects(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider()))
+						if (meshIntersects(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider(), m_rigidBodies[i]->GetQuaternionRotation(), m_rigidBodies[j]->GetQuaternionRotation()))
 						{
 							//minkowskiSum(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider());
 							collisionResponse(*m_rigidBodies[i], *m_rigidBodies[j]);
@@ -363,7 +364,7 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	return true;
 }
 
-bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
+bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2, const glm::quat& rot1, const glm::quat& rot2)
 {
 	std::vector<glm::vec3>& A = col1.GetVertices();
 	std::vector<glm::vec3>& B = col2.GetVertices();
@@ -372,12 +373,13 @@ bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const C
 	DBG_ASSERT(B.size() != 0);
 
 	std::vector<glm::vec3> simplex;
-	glm::vec3 a = A[0] - B[0];
+	glm::vec3 a = Math::rotateVector(A[0], rot1)  - Math::rotateVector(B[0], rot1);
 	simplex.push_back(a);
 	glm::vec3 direction = -a; // from point a to the origin
 	
 	while (1)
 	{
+		//a = support(Math::rotateVector(direction, rot1), A) - support(Math::rotateVector(-direction, rot2), B);
 		a = support(direction, A) - support(-direction, B);
 		if (glm::dot(a, direction) < 0)
 		{
@@ -394,8 +396,6 @@ bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const C
 			}
 		}
 	}
-
-
 }
 
 glm::vec3 PhysicsManager::support(const glm::vec3& direction, const std::vector<glm::vec3>& points)
@@ -430,8 +430,8 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 
 	switch (size)
 	{
-	// case 1 wont appear, because doSimplex will always be called after atleast 2 points had been added to the simplex list
 	// Simpex is a point (A)
+	// case 1 wont appear, because doSimplex will always be called after atleast 2 points had been added to the simplex list
 	case 1:
 	{
 		direction = -A;
@@ -519,6 +519,34 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 	//// Simplex is a tetrahedron (ABCD)
 	case 4:
 	{
+		// if case is reached returns true. Not final
+		glm::vec3& A = simplex[3];
+		glm::vec3& B = simplex[2];
+		glm::vec3& C = simplex[1];
+		glm::vec3& D = simplex[0];
+
+		// check if origin is inside simplex
+		//ABC
+		glm::vec3 n = glm::cross(B - A, C - A);
+		if (glm::dot(n, -A) > 0)
+		{
+			//ABD
+			n = glm::cross(B - A, D - A);
+			if (glm::dot(n, -A) > 0)
+			{
+				//ACD
+				n = glm::cross(C - A, D - A);
+				if (glm::dot(n, -A) > 0)
+				{
+					//BCD
+					n = glm::cross(C - B, D - B);
+					if (glm::dot(n, -B) > 0)
+					{
+						return true;
+					}
+				}
+			}
+		}
 		return true;
 		break;
 	}

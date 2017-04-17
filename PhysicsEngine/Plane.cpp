@@ -7,6 +7,7 @@
 #include "Plane.h"
 
 #include "RigidBody.h"
+#include "MeshCollider.h"
 
 Plane::Plane() : GameObject()
 {
@@ -14,11 +15,20 @@ Plane::Plane() : GameObject()
 	m_normal.x = 0.0f;
 	m_normal.y = 1.0f;
 	m_normal.z = 0.0f;
+
+	setVertices();
+	//m_pRigidbody->GetMeshCollider().SetVertices(m_vertices);
 }
 
 Plane::Plane(const glm::vec3 position) : GameObject(position)
 {
 	m_pRigidbody->IsStatic(true);
+	m_normal.x = 0.0f;
+	m_normal.y = 1.0f;
+	m_normal.z = 0.0f;
+
+	setVertices();
+	m_pRigidbody->GetMeshCollider().SetVertices(m_vertices);
 }
 
 Plane::Plane(const glm::vec3 position, const glm::vec3 scale) : GameObject(position)
@@ -38,11 +48,22 @@ void Plane::Draw()
 	prepareDraw();
 
 	glBegin(GL_QUADS);
-	glVertex3f(-100.0f, -1.0f, -100.0f);
-	glVertex3f(-100.0f, -1.0f, 100.0f);
-	glVertex3f(100.0f, -1.0f, 100.0f);
-	glVertex3f(100.0f, -1.0f, -100.0f);
+
+	for (size_t i = 0; i < m_vertices.size(); i++)
+	{
+		glVertex3f(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+	}
+
+
 	glEnd();
 
 	glPopMatrix();
+}
+
+void Plane::setVertices()
+{
+	m_vertices.push_back(glm::vec3(-100.0f, -1.0f, -100.0f));
+	m_vertices.push_back(glm::vec3(-100.0f, -1.0f, 100.0f));
+	m_vertices.push_back(glm::vec3(100.0f, -1.0f, 100.0f));
+	m_vertices.push_back(glm::vec3(100.0f, -1.0f, -100.0f));
 }

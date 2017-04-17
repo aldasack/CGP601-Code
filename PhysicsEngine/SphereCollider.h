@@ -21,6 +21,7 @@ namespace Collision
 		SphereCollider(RigidBody& rigidBody);
 		~SphereCollider();
 		void Update() override;
+		void AdjustCollider();
 		void SetPosition(const glm::vec3& position);
 		glm::vec3 GetPosition() const;
 		// should be assigned by collider itself
@@ -29,6 +30,7 @@ namespace Collision
 	
 	private:
 		glm::vec3 m_position;
+		glm::vec3 m_offset;
 		float m_radius;
 	};
 
