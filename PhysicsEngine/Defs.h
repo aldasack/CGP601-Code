@@ -26,7 +26,8 @@
 
 // Basic assert function to do some checking - if the check is violate
 // i.e. false, then this line will cause the debugger to stop on the line
-#define DBG_ASSERT(f) { if(!(f)){ __debugbreak(); }; }
+#define DBG_ASSERT(condition) { if(!(condition)){ __debugbreak(); }; }
+
 
 namespace Constants
 {

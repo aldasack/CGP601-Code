@@ -12,7 +12,7 @@ using namespace Collision;
 
 SphereCollider::SphereCollider(RigidBody& rigidBody) : Collider(rigidBody)
 {
-	m_position = m_pRigidBody->GetPosition();
+	m_center = m_pRigidBody->GetPosition();
 	m_offset = { 0.0f, 0.0f, 0.0f };
 	m_radius = 0.5f;
 }
@@ -21,17 +21,26 @@ SphereCollider::~SphereCollider(){}
 
 void SphereCollider::Update()
 {
-	m_position = m_pRigidBody->GetPosition() + m_offset;
+	m_center = m_pRigidBody->GetPosition() + m_offset;
+	
+	glm::vec3& scale = m_pRigidBody->GetGameObject().GetScale();
+	float factor = scale.x;
+	if (scale.y > factor)
+		factor = scale.y;
+	if (scale.z > factor)
+		factor = scale.z;
+	m_radius *= factor;
+	
 }
 
 void SphereCollider::AdjustCollider()
 {
 	std::vector<glm::vec3>& vertices = m_pRigidBody->GetGameObject().GetVertices();
 
-	// Calcualte centre
+	// Calculating center / offset from GameObject origin
 	glm::vec3 minBounds = vertices[0];
 	glm::vec3 maxBounds = vertices[0];
-	for (int i = 1; i < vertices.size(); i++)
+	for (size_t i = 1; i < vertices.size(); i++)
 	{
 		glm::vec3 vertex = vertices[i];
 		if (minBounds.x > vertex.x || minBounds.y > vertex.y || minBounds.z > vertex.z)
@@ -46,7 +55,7 @@ void SphereCollider::AdjustCollider()
 	
 	// Calculate radius
 	float maxDistance = 0.0f;
-	for (int i = 1; i < vertices.size(); i++)
+	for (size_t i = 1; i < vertices.size(); i++)
 	{
 		float distance = glm::length(vertices[i] - m_offset);
 		if (distance > maxDistance)
@@ -55,14 +64,14 @@ void SphereCollider::AdjustCollider()
 	m_radius = maxDistance;
 }
 
-void SphereCollider::SetPosition(const glm::vec3& position)
+void SphereCollider::SetCenter(const glm::vec3& center)
 {
-	m_position = position;
+	m_center = center;
 }
 
-glm::vec3 SphereCollider::GetPosition() const
+glm::vec3 SphereCollider::GetCenter() const
 {
-	return m_position;
+	return m_center;
 }
 
 void SphereCollider::SetRadius(const float radius)
@@ -74,5 +83,7 @@ void SphereCollider::SetRadius(const float radius)
 
 float SphereCollider::GetRadius() const
 {
+	// Radius can't be zero or negative
+	DBG_ASSERT(m_radius > 0.0f);
 	return m_radius;
 }

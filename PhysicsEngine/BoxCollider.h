@@ -19,30 +19,19 @@ namespace Collision
 		public Collider
 	{
 	public:
-		BoxCollider(RigidBody& rigidbody/*, const glm::vec3& scale*/);
+		BoxCollider(RigidBody& rigidbody);
 		~BoxCollider();
 		void Update() override;
 		void AdjustCollider();
-		std::array<glm::vec3, 8> GetEdges() const;
 		glm::vec3 GetCenter() const;
 		std::array<glm::vec3, 3> GetAxes() const;
 		glm::vec3 GetExtents() const;
-		// Returns rotation as normalized quaternion
-		glm::quat GetRotation() const;
-
-	//private:
-
-		//second approach
-		glm::vec3 m_center;
-		std::array<glm::vec3, 3> m_axes;
-		glm::vec3 m_extent;
 
 	private:
-		// first approach
-		std::array<glm::vec3, 8> m_edges;
-		std::array<glm::vec3, 8> m_transformedEdges;
-		glm::quat m_rotation;
-		
+		glm::vec3 m_center;
+		glm::vec3 m_offset;
+		std::array<glm::vec3, 3> m_axes;
+		glm::vec3 m_extent;
 	};
 }
 

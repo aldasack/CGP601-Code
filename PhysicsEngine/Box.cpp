@@ -8,6 +8,7 @@
 
 #include "RigidBody.h"
 #include "SphereCollider.h"
+#include "BoxCollider.h"
 #include "MeshCollider.h"
 
 Box::Box() : GameObject()
@@ -17,6 +18,7 @@ Box::Box() : GameObject()
 	
 	// Adjust Colliders to the mesh
 	m_pRigidbody->GetSphereCollider().AdjustCollider(); //SetRadius(sqrt(3) / 2); // d = sqrt(3) * a; r = d / 2 => sqrt(3) / 2; a = 1
+	m_pRigidbody->GetBoxCollider().AdjustCollider();
 	m_pRigidbody->GetMeshCollider().AdjustCollider(m_vertices);
 }
 
@@ -25,6 +27,7 @@ Box::Box(const glm::vec3& position) : GameObject(position)
 	setVertices();
 	// Adjust Colliders to the mesh
 	m_pRigidbody->GetSphereCollider().AdjustCollider(); //SetRadius(sqrt(3) / 2); // d = sqrt(3) * a; r = d / 2 => sqrt(3) / 2; a = 1
+	m_pRigidbody->GetBoxCollider().AdjustCollider();
 	m_pRigidbody->GetMeshCollider().AdjustCollider(m_vertices);
 }
 

@@ -37,8 +37,13 @@ void MeshCollider::Update()
 	// Rotate and translate vertices
 	for (size_t i = 0; i < m_pLocalVertices->size(); i++)
 	{
-		m_pWorldVertices->operator[](i) = Math::rotateVector(m_pLocalVertices->operator[](i), m_pRigidBody->GetQuaternionRotation()) + m_pRigidBody->GetPosition();
-
+		m_pWorldVertices->operator[](i) = m_pLocalVertices->operator[](i);
+		// Scale
+		m_pWorldVertices->operator[](i) *= m_pRigidBody->GetGameObject().GetScale();
+		// Rotate
+		m_pWorldVertices->operator[](i) = Math::rotateVector(m_pWorldVertices->operator[](i), m_pRigidBody->GetQuaternionRotation());
+		// Translate
+		m_pWorldVertices->operator[](i) += m_pRigidBody->GetPosition();
 	}
 	//// Translate vertices
 	//for (size_t i = 0; i < m_pLocalVertices->size(); i++)
@@ -50,7 +55,6 @@ void MeshCollider::Update()
 
 void MeshCollider::AdjustCollider(std::vector<glm::vec3>& vertices)
 {
-	//m_pLocalVertices = std::addressof(m_pRigidBody->GetGameObject().GetVertices());
 	m_pLocalVertices = &vertices;
 	DBG_ASSERT(m_pLocalVertices->size() > 0);
 	m_pWorldVertices->reserve(m_pLocalVertices->size());

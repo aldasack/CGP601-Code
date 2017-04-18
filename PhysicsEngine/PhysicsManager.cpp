@@ -82,7 +82,7 @@ void PhysicsManager::AddRigidBody(RigidBody& rigidbody)
 bool PhysicsManager::spheresIntersect(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2)
 {
 	float minDis_sqrd = pow(col1.GetRadius() + col2.GetRadius(), 2);
-	float realDis_sqrd = pow(col1.GetPosition().x - col2.GetPosition().x, 2) + pow(col1.GetPosition().y - col2.GetPosition().y, 2) + pow(col1.GetPosition().z - col2.GetPosition().z, 2);
+	float realDis_sqrd = pow(col1.GetCenter().x - col2.GetCenter().x, 2) + pow(col1.GetCenter().y - col2.GetCenter().y, 2) + pow(col1.GetCenter().z - col2.GetCenter().z, 2);
 
 	if (realDis_sqrd <= minDis_sqrd)
 	{
@@ -97,27 +97,28 @@ bool PhysicsManager::spheresIntersect(const Collision::SphereCollider &col1, con
 
 bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Collision::BoxCollider& col2)
 {
-	std::array<glm::vec3, 8> edges1 = col1.GetEdges();
-	std::array<glm::vec3, 8> edges2 = col2.GetEdges();
 	// stores all the calculated dot products (absulute value)
 	float c[3][3];
 	float dot[3][3];
 	float d[3];
 	float r, r0, r1;
-	//std::vector<float> interpenetration; For contact information only
 
-	glm::vec3 difference = col2.m_center - col1.m_center;
+	glm::vec3 difference = col2.GetCenter() - col1.GetCenter();
+	std::array<glm::vec3, 3>& col1Axes = col1.GetAxes();
+	std::array<glm::vec3, 3>& col2Axes = col2.GetAxes();
+	glm::vec3& col1Extent = col1.GetExtents();
+	glm::vec3& col2Extent = col2.GetExtents();
 
 	// 1. Axis: col1 x (0) against col2 x, y & z
 	for (int i = 0; i < 3; i++)
 	{
-		c[0][i] = glm::dot(col1.m_axes[0], col2.m_axes[i]);
+		c[0][i] = glm::dot(col1Axes[0], col2Axes[i]);
 		dot[0][i] = abs(c[0][i]);
 	}
-	d[0] = glm::dot(difference, col1.m_axes[0]);
+	d[0] = glm::dot(difference, col1Axes[0]);
 	r = abs(d[0]);
-	r0 = col1.m_extent.x;
-	r1 = col1.m_extent.x * dot[0][0] + col1.m_extent.y * dot[0][1] + col1.m_extent.z * dot[0][2];
+	r0 = col1Extent.x;
+	r1 = col1Extent.x * dot[0][0] + col1Extent.y * dot[0][1] + col1Extent.z * dot[0][2];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -129,13 +130,13 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	// 2. Axis: col1 y (1) against col2 x, y & z
 	for (int i = 0; i < 3; i++)
 	{
-		c[1][i] = glm::dot(col1.m_axes[1], col2.m_axes[i]);
+		c[1][i] = glm::dot(col1Axes[1], col2Axes[i]);
 		dot[1][i] = abs(c[1][i]);
 	}
-	d[1] = glm::dot(difference, col1.m_axes[1]);
+	d[1] = glm::dot(difference, col1Axes[1]);
 	r = abs(d[1]);
-	r0 = col1.m_extent.y;
-	r1 = col1.m_extent.x * dot[1][0] + col1.m_extent.y * dot[1][1] + col1.m_extent.z * dot[1][2];
+	r0 = col1Extent.y;
+	r1 = col1Extent.x * dot[1][0] + col1Extent.y * dot[1][1] + col1Extent.z * dot[1][2];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -146,13 +147,13 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	// 3. Axis: col1 z (2) against col2 x, y & z
 	for (int i = 0; i < 3; i++)
 	{
-		c[2][i] = glm::dot(col1.m_axes[2], col2.m_axes[i]);
+		c[2][i] = glm::dot(col1Axes[2], col2Axes[i]);
 		dot[2][i] = abs(c[2][i]);
 	}
-	d[2] = glm::dot(difference, col1.m_axes[2]);
+	d[2] = glm::dot(difference, col1Axes[2]);
 	r = abs(d[2]);
-	r0 = col1.m_extent.z;
-	r1 = col1.m_extent.x * dot[2][0] + col1.m_extent.y * dot[2][1] + col1.m_extent.z * dot[2][2];
+	r0 = col1Extent.z;
+	r1 = col1Extent.x * dot[2][0] + col1Extent.y * dot[2][1] + col1Extent.z * dot[2][2];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -161,9 +162,9 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	}
 
 	// 4. Axis: col2 x (1) against col1 x, y & z (dot products already calculated)
-	r = abs(glm::dot(difference, col1.m_axes[0]));
-	r0 = col1.m_extent.x * dot[0][0] + col1.m_extent.y * dot[1][0] + col1.m_extent.z * dot[2][0];
-	r1 = col1.m_extent.z;
+	r = abs(glm::dot(difference, col1Axes[0]));
+	r0 = col1Extent.x * dot[0][0] + col1Extent.y * dot[1][0] + col1Extent.z * dot[2][0];
+	r1 = col1Extent.z;
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -172,9 +173,9 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	}
 
 	// 5. Axis: col2 y (2) against col1 x, y & z (dot products already calculated)
-	r = abs(glm::dot(difference, col1.m_axes[1]));
-	r0 = col1.m_extent.x * dot[0][1] + col1.m_extent.y * dot[1][1] + col1.m_extent.z * dot[2][1];
-	r1 = col1.m_extent.z;
+	r = abs(glm::dot(difference, col1Axes[1]));
+	r0 = col1Extent.x * dot[0][1] + col1Extent.y * dot[1][1] + col1Extent.z * dot[2][1];
+	r1 = col1Extent.z;
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -183,9 +184,9 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	}
 
 	// 6. Axis: col2 z (3) against col1 x, y & z (dot products already calculated)
-	r = abs(glm::dot(difference, col1.m_axes[2]));
-	r0 = col1.m_extent.x * dot[0][2] + col1.m_extent.y * dot[1][2] + col1.m_extent.z * dot[2][2];
-	r1 = col1.m_extent.z;
+	r = abs(glm::dot(difference, col1Axes[2]));
+	r0 = col1Extent.x * dot[0][2] + col1Extent.y * dot[1][2] + col1Extent.z * dot[2][2];
+	r1 = col1Extent.z;
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -195,8 +196,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 7. Axis: col1 x (1) against col2 x
 	r = abs(d[2] * c[1][0] - d[1] * c[2][0]);
-	r0 = col1.m_extent.y * dot[2][0] + col1.m_extent.z * dot[1][0];
-	r1 = col2.m_extent.y * dot[0][2] + col2.m_extent.z * dot[0][1];
+	r0 = col1Extent.y * dot[2][0] + col1Extent.z * dot[1][0];
+	r1 = col2Extent.y * dot[0][2] + col2Extent.z * dot[0][1];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -206,8 +207,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 8. Axis: col1 x (1) against col2 y
 	r = abs(d[2] * c[1][1] - d[1] * c[2][1]);
-	r0 = col1.m_extent.y * dot[2][1] + col1.m_extent.z * dot[1][1];
-	r1 = col2.m_extent.x * dot[0][2] + col2.m_extent.z * dot[0][0];
+	r0 = col1Extent.y * dot[2][1] + col1Extent.z * dot[1][1];
+	r1 = col2Extent.x * dot[0][2] + col2Extent.z * dot[0][0];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -217,8 +218,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 9. Axis: col1 x (1) against col2 z
 	r = abs(d[2] * c[1][2] - d[1] * c[2][2]);
-	r0 = col1.m_extent.y * dot[2][2] + col1.m_extent.z * dot[1][2];
-	r1 = col2.m_extent.x * dot[0][1] + col2.m_extent.y * dot[0][0];
+	r0 = col1Extent.y * dot[2][2] + col1Extent.z * dot[1][2];
+	r1 = col2Extent.x * dot[0][1] + col2Extent.y * dot[0][0];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -228,8 +229,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 10. Axis: col1 y (1) against col2 x
 	r = abs(d[0] * c[2][0] - d[2] * c[0][0]);
-	r0 = col1.m_extent.x * dot[2][0] + col1.m_extent.z * dot[0][0];
-	r1 = col2.m_extent.y * dot[1][2] + col2.m_extent.z * dot[1][1];
+	r0 = col1Extent.x * dot[2][0] + col1Extent.z * dot[0][0];
+	r1 = col2Extent.y * dot[1][2] + col2Extent.z * dot[1][1];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -239,8 +240,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 11. Axis: col1 y (1) against col2 y
 	r = abs(d[0] * c[2][1] - d[2] * c[0][1]);
-	r0 = col1.m_extent.x * dot[2][1] + col1.m_extent.z * dot[0][1];
-	r1 = col2.m_extent.x * dot[1][2] + col2.m_extent.z * dot[1][0];
+	r0 = col1Extent.x * dot[2][1] + col1Extent.z * dot[0][1];
+	r1 = col2Extent.x * dot[1][2] + col2Extent.z * dot[1][0];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -250,8 +251,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 12. Axis: col1 y (1) against col2 z
 	r = abs(d[0] * c[2][2] - d[2] * c[0][2]);
-	r0 = col1.m_extent.x * dot[2][2] + col1.m_extent.z * dot[0][2];
-	r1 = col2.m_extent.x * dot[1][1] + col2.m_extent.y * dot[1][0];
+	r0 = col1Extent.x * dot[2][2] + col1Extent.z * dot[0][2];
+	r1 = col2Extent.x * dot[1][1] + col2Extent.y * dot[1][0];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -261,8 +262,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 13. Axis: col1 z (1) against col2 x
 	r = abs(d[1] * c[0][0] - d[0] * c[1][0]);
-	r0 = col1.m_extent.x * dot[1][0] + col1.m_extent.y * dot[0][0];
-	r1 = col2.m_extent.y * dot[2][2] + col2.m_extent.z * dot[2][1];
+	r0 = col1Extent.x * dot[1][0] + col1Extent.y * dot[0][0];
+	r1 = col2Extent.y * dot[2][2] + col2Extent.z * dot[2][1];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -272,8 +273,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 14. Axis: col1 z (1) against col2 y
 	r = abs(d[1] * c[0][1] - d[0] * c[1][1]);
-	r0 = col1.m_extent.x * dot[1][1] + col1.m_extent.y * dot[0][1];
-	r1 = col2.m_extent.x * dot[2][2] + col2.m_extent.z * dot[2][0];
+	r0 = col1Extent.x * dot[1][1] + col1Extent.y * dot[0][1];
+	r1 = col2Extent.x * dot[2][2] + col2Extent.z * dot[2][0];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)
@@ -283,8 +284,8 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 
 	// 15. Axis: col1 z (1) against col2 z
 	r = abs(d[1] * c[0][2] - d[0] * c[1][2]);
-	r0 = col1.m_extent.x * dot[1][2] + col1.m_extent.y * dot[0][2];
-	r1 = col2.m_extent.x * dot[2][1] + col2.m_extent.y * dot[2][0];
+	r0 = col1Extent.x * dot[1][2] + col1Extent.y * dot[0][2];
+	r1 = col2Extent.x * dot[2][1] + col2Extent.y * dot[2][0];
 
 	//interpenetration.push_back(r0 + r1 - r);
 	if (r > r0 + r1)

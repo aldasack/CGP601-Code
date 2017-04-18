@@ -65,12 +65,7 @@ private:
 	GameManager();
 	void clearKeyState();
 	void draw();
-	//void drawPlane();
 	void drawText(glm::vec2 position, glm::vec3 color, std::string text);
-	void update();
-	bool spheresIntersect(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
-	bool boxIntersects(const Collision::BoxCollider & col1, const Collision::BoxCollider & col2);
-	void collisionResponse(RigidBody& g1, RigidBody& g2);
 
 	static GameManager* s_instance;
 };

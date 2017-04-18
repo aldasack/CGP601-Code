@@ -6,30 +6,18 @@
 
 #include "BoxCollider.h"
 
+#include "GameObject.h"
+
 using namespace Collision;
 
 BoxCollider::BoxCollider(RigidBody& rigidbody/*, const glm::vec3& scale*/) : Collider(rigidbody)
 {
-	// TODO: scale edges according to the GameObject.
-	// Changing the scale later will have no affect to the Collider.
-
-	// cube with a = 1m standing in the ground y = 0.
-	m_edges[0] = glm::vec3(-0.5f, 1.0f, -0.5f);
-	m_edges[1] = glm::vec3(0.5f, 1.0f, -0.5f);
-	m_edges[2] = glm::vec3(0.5f, 1.0f, 0.5f);
-	m_edges[3] = glm::vec3(-0.5f, 1.0f, 0.5f);
-	m_edges[4] = glm::vec3(-0.5f, 0.0f, -0.5f);
-	m_edges[5] = glm::vec3(0.5f, 0.0f, -0.5f);
-	m_edges[6] = glm::vec3(0.5f, 0.0f, 0.5f);
-	m_edges[7] = glm::vec3(-0.5f, 0.0f, 0.5f);
-
-	m_center = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_extent[0] = 0.5f;
-	m_extent[1] = 0.5f;
-	m_extent[2] = 0.5f;
-	m_axes[0] = glm::vec3(1.0f, 0.0f, 0.0f);
-	m_axes[1] = glm::vec3(0.0f, 1.0f, 0.0f);
-	m_axes[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+	m_center = m_pRigidBody->GetPosition();
+	m_offset = { 0.0f, 0.0f, 0.0f };
+	m_extent = { 0.5f, 0.5f, 0.5f };
+	m_axes[0] = { 1.0f, 0.0f, 0.0f };
+	m_axes[1] = { 0.0f, 1.0f, 0.0f };
+	m_axes[2] = { 0.0f, 0.0f, 1.0f };
 }
 
 BoxCollider::~BoxCollider(){}
@@ -37,16 +25,10 @@ BoxCollider::~BoxCollider(){}
 void BoxCollider::Update()
 {
 	// Translating the box collider.
-	glm::vec3& position = m_pRigidBody->GetPosition();
-	for (unsigned int i = 0; i < m_edges.size(); i++)
-	{
-		m_transformedEdges[i] = m_edges[i] + position;
-	}
-	m_center = position;
-
+	m_center = m_pRigidBody->GetPosition();
 
 	// Rotating the box collider / rotating the axis
-	m_rotation = m_pRigidBody->GetQuaternionRotation();
+	glm::quat m_rotation = m_pRigidBody->GetQuaternionRotation();
 	// x axis (1,0,0)
 	m_axes[0] = Math::rotateVector(glm::vec3(1.0f, 0.0f, 0.0f), m_rotation);
 	m_axes[0] = glm::normalize(m_axes[0]);
@@ -57,17 +39,36 @@ void BoxCollider::Update()
 	m_axes[2] = Math::rotateVector(glm::vec3(0.0f, 0.0f, 1.0f), m_rotation);
 	m_axes[2] = glm::normalize(m_axes[2]);
 
-	// TODO: Scale
+	// Scaling the box collider / scaling the extends
+	glm::vec3& scale = m_pRigidBody->GetGameObject().GetScale();
+	m_extent *= scale;
+
 }
 
 void BoxCollider::AdjustCollider()
 {
-	// TODO: use vertices to generate fitting bounding box
-}
+	std::vector<glm::vec3>& vertices = m_pRigidBody->GetGameObject().GetVertices();
+	
+	// Calculating center / offset from GameObject origin
+	glm::vec3 minBounds = vertices[0];
+	glm::vec3 maxBounds = vertices[0];
+	for (size_t i = 1; i < vertices.size(); i++)
+	{
+		glm::vec3 vertex = vertices[i];
+		if (minBounds.x > vertex.x || minBounds.y > vertex.y || minBounds.z > vertex.z)
+			minBounds = vertex;
 
-std::array<glm::vec3, 8> BoxCollider::GetEdges() const
-{
-	return m_transformedEdges;
+		if (maxBounds.x < vertex.x || maxBounds.y < vertex.y || maxBounds.z < vertex.z)
+			maxBounds = vertex;
+	}
+	m_offset.x = minBounds.x + ((maxBounds.x - minBounds.x) / 2);
+	m_offset.y = minBounds.y + ((maxBounds.y - minBounds.y) / 2);
+	m_offset.z = minBounds.z + ((maxBounds.z - minBounds.z) / 2);
+
+	// Calculating extents of the box along the axes
+	m_extent.x = maxBounds.x - m_offset.x;
+	m_extent.y = maxBounds.y - m_offset.y;
+	m_extent.z = maxBounds.z - m_offset.z;
 }
 
 glm::vec3 BoxCollider::GetCenter() const
@@ -85,11 +86,3 @@ glm::vec3 BoxCollider::GetExtents() const
 	return m_extent;
 }
 
-glm::quat BoxCollider::GetRotation() const
-{
-	// check if quaternion is normalized
-	float length = glm::length(m_rotation);
-	DBG_ASSERT(abs(length - 1.0f) < 0.001f);
-
-	return m_rotation;
-}

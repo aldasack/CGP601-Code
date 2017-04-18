@@ -22,14 +22,14 @@ namespace Collision
 		~SphereCollider();
 		void Update() override;
 		void AdjustCollider();
-		void SetPosition(const glm::vec3& position);
-		glm::vec3 GetPosition() const;
+		void SetCenter(const glm::vec3& center);
+		glm::vec3 GetCenter() const;
 		// should be assigned by collider itself
 		void SetRadius(const float radius);
 		float GetRadius() const;
 	
 	private:
-		glm::vec3 m_position;
+		glm::vec3 m_center;
 		glm::vec3 m_offset;
 		float m_radius;
 	};
