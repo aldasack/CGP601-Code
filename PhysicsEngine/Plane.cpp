@@ -7,6 +7,8 @@
 #include "Plane.h"
 
 #include "RigidBody.h"
+#include "SphereCollider.h"
+#include "BoxCollider.h"
 #include "MeshCollider.h"
 
 Plane::Plane() : GameObject()
@@ -17,7 +19,9 @@ Plane::Plane() : GameObject()
 	m_normal.z = 0.0f;
 
 	setVertices();
-	//m_pRigidbody->GetMeshCollider().SetVertices(m_vertices);
+	m_pRigidbody->GetSphereCollider().AdjustCollider();
+	m_pRigidbody->GetBoxCollider().AdjustCollider();
+	m_pRigidbody->GetMeshCollider().AdjustCollider(m_vertices);
 }
 
 Plane::Plane(const glm::vec3 position) : GameObject(position)
@@ -28,7 +32,9 @@ Plane::Plane(const glm::vec3 position) : GameObject(position)
 	m_normal.z = 0.0f;
 
 	setVertices();
-	m_pRigidbody->GetMeshCollider().SetVertices(m_vertices);
+	m_pRigidbody->GetSphereCollider().AdjustCollider();
+	m_pRigidbody->GetBoxCollider().AdjustCollider();
+	m_pRigidbody->GetMeshCollider().AdjustCollider(m_vertices);
 }
 
 Plane::Plane(const glm::vec3 position, const glm::vec3 scale) : GameObject(position)

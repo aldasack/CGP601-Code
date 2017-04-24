@@ -103,30 +103,32 @@ void GameManager::InitScene()
 	glm::vec3 pos1;
 	pos1.x = 0.0f;
 	pos1.y = -0.5f;
-	pos1.z = 5.0;
+	pos1.z = 0.0f;
 
 	glm::vec3 pos2;
 	pos2.x = 0.0f;
-	pos2.y = -0.5f;
+	pos2.y = 1.1f;
 	pos2.z = 0.0;
 
-	m_gameObjects.push_back(new Plane());
+	m_gameObjects.push_back(new Plane(glm::vec3(0.0f, -1.0f, 0.0f)));
 	m_gameObjects[0]->SetColor(glm::vec3(0.5f, 0.5f, 0.5f));
+	m_gameObjects[0]->SetScale(glm::vec3(100.0f, 1.0f, 100.0f));
+	m_gameObjects[0]->IsStatic(true);
 	//m_gameObjects.push_back(new Sphere(pos1));
 	m_gameObjects.push_back(new Box(pos1));
 	m_gameObjects[1]->SetColor(Colors::Blue);
+	m_gameObjects[1]->UseGravity(false);
 	m_gameObjects.push_back(new Box(pos2));
 	m_gameObjects[2]->SetColor(Colors::White);
-	m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
-	pos1.y = 1.1f;
-	/*m_gameObjects.push_back(new Box(pos1));
-	m_gameObjects[3]->SetColor(Colors::Red);
-	m_gameObjects[3]->SetVelocity(glm::vec3(0.0f, 0.0f, -1.0f));
-	m_gameObjects[3]->UseGravity(false);*/
+	m_gameObjects[2]->UseGravity(true);
+	//m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
+	//m_gameObjects[2]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
 
-	m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -1.0f));
+	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -1.0f));
 	//m_gameObjects[1]->AddTorque(glm::vec3(0.0f, 10.0f, 0.0f));
 	//m_gameObjects[1]->SetColor(glm::vec3(0.0f, 0.0f, 0.0f));
+
+//	m_gameObjects.push_back(new Sphere());
 
 	/*glm::vec3 color;
 	for (int i = 0; i < 9; i++)
@@ -164,12 +166,12 @@ void GameManager::KeyboardHandle(unsigned char key, int x, int y)
 
 	case 43: // Plus
 		// changing simulation speed
-		m_targetFrameTime *= 2.0f;
+		m_targetFrameTime *= 0.5f;
 		break;
 	
 	case 45: // Minus
 		// changing simulation speed
-		m_targetFrameTime *= 0.5f;
+		m_targetFrameTime *= 2.0f;
 		break;
 
 	case 114: // R
@@ -212,8 +214,8 @@ void GameManager::draw()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	// looking from above
-	gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-	//gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
+	//gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
 
 
 	//DrawCube();
@@ -247,19 +249,6 @@ void GameManager::draw()
 	//glFlush();
 	glutSwapBuffers();
 }
-
-//void GameManager::drawPlane()
-//{
-//	//glLoadIdentity();
-//	glColor3f(0.5f, 0.5f, 0.5f);
-//
-//	glBegin(GL_QUADS);
-//	glVertex3f(-100.0f, -1.0f, -100.0f);
-//	glVertex3f(-100.0f, -1.0f, 100.0f);
-//	glVertex3f(100.0f, -1.0f, 100.0f);
-//	glVertex3f(100.0f, -1.0f, -100.0f);
-//	glEnd();
-//}
 
 void GameManager::drawText(glm::vec2 position, glm::vec3 color, std::string text)
 {

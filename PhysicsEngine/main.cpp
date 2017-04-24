@@ -28,8 +28,10 @@ void InitRendering()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	GLfloat diffuse[] = { 1.0, 1.0, 1.0 };
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	GLfloat ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
 	glEnable(GL_COLOR_MATERIAL);
 }
 
@@ -65,9 +67,6 @@ int main(void)
 
 	// Main Loop
 	glutMainLoop();
-	
-	
-	//int exitCode = gameManager->Run();
 
 	gameManager->Shutdown();
 	gameManager = nullptr;
