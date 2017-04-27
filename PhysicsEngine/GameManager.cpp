@@ -107,7 +107,7 @@ void GameManager::InitScene()
 
 	glm::vec3 pos2;
 	pos2.x = 0.0f;
-	pos2.y = 1.1f;
+	pos2.y = 1.5f;
 	pos2.z = 0.0;
 
 	m_gameObjects.push_back(new Plane(glm::vec3(0.0f, -1.0f, 0.0f)));

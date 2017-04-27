@@ -69,6 +69,9 @@ void BoxCollider::AdjustCollider()
 	m_extent.x = maxBounds.x - m_offset.x;
 	m_extent.y = maxBounds.y - m_offset.y;
 	m_extent.z = maxBounds.z - m_offset.z;
+
+	// Apply transformation
+	Update();
 }
 
 glm::vec3 BoxCollider::GetCenter() const

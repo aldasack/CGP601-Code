@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <list>
 
 #include "PhysicsManager.h"
 
@@ -13,6 +14,7 @@
 #include "SphereCollider.h"
 #include "MeshCollider.h"
 #include "BoxCollider.h"
+#include "ContactData.h"
 
 PhysicsManager* PhysicsManager::s_instance = nullptr;
 
@@ -58,23 +60,17 @@ void PhysicsManager::Update(float deltaTime)
 			//if (&m_rigidBodies[i] != &m_rigidBodies[j])
 			if(i != j)
 			{
-				//float length = m_rigidBodies[i]->GetPosition().z - m_rigidBodies[j]->GetPosition().z;  //glm::length(m_rigidBodies[i]->GetPosition() - m_rigidBodies[j]->GetPosition());
-				//if (abs(length) <= (0.5f + sqrtf(2) / 2))
-				//{
-				//	length += 0;
-				//}
 				if (spheresIntersect(m_rigidBodies[i]->GetSphereCollider(), m_rigidBodies[j]->GetSphereCollider()))
 				{
 					if (boxIntersects(m_rigidBodies[i]->GetBoxCollider(), m_rigidBodies[j]->GetBoxCollider()))
 					{
-						if (meshIntersects(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider(), m_rigidBodies[i]->GetQuaternionRotation(), m_rigidBodies[j]->GetQuaternionRotation()))
+						if (meshIntersects(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider()))
 						{
 							collisionResponse(*m_rigidBodies[i], *m_rigidBodies[j]);
 						}
 					}
 				}
 			}
-
 		}
 	}
 }
@@ -367,7 +363,7 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 }
 
 #pragma region GJK
-bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2, const glm::quat& rot1, const glm::quat& rot2)
+bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
 {
 	std::vector<glm::vec3>& A = col1.GetVertices();
 	std::vector<glm::vec3>& B = col2.GetVertices();
@@ -375,18 +371,22 @@ bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const C
 	DBG_ASSERT(A.size() != 0);
 	DBG_ASSERT(B.size() != 0);
 
-	std::vector<glm::vec3> simplex;
-	//std::array<glm::vec3, 4> simplex;
-	glm::vec3 a = A[0] - B[0];
+	//std::vector<glm::vec3> simplex;
+	std::vector<SupportPoint> simplex;
+	//glm::vec3 a = A[0] - B[0];
+	SupportPoint a = { A[0] - B[0], A[0], B[0] };
 	simplex.push_back(a);
-	glm::vec3 direction = -a; // from point a to the origin
+	glm::vec3 direction = -a.v; // from point a to the origin
 
 	int i = 0;
-	while (1)
+	while (true)
 	{
-		//a = support(Math::rotateVector(direction, rot1), A) - support(Math::rotateVector(-direction, rot2), B);
-		a = support(direction, A) - support(-direction, B);
-		if (glm::dot(a, direction) < 0)
+		//a.v = support(direction, A) - support(-direction, B);
+		a.A = support(direction, A);
+		a.B = support(-direction, B);
+		a.v = a.A - a.B;
+
+		if (glm::dot(a.v, direction) < 0)
 		{
 			// No intersection
 			// furthest point reached, can not go further than the origin
@@ -399,6 +399,7 @@ bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const C
 			DBG_ASSERT(simplex.size() <= 4);
 			if (doSimplex(simplex, direction))
 			{
+				generateContactData(simplex, A, B);
 				return true;
 			}
 			else
@@ -433,7 +434,7 @@ glm::vec3 PhysicsManager::support(const glm::vec3& direction, const std::vector<
 	return points[index];
 }
 
-bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direction)
+bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& direction)
 {
 	// a x b x a = cross(cross(a,b),a)
 
@@ -442,7 +443,8 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 	DBG_ASSERT(size != 0);
 
 	// get the last added point
-	glm::vec3& A = simplex[size - 1];
+	//glm::vec3& A = simplex[size - 1];
+	SupportPoint& A = simplex[size - 1];
 
 	switch (size)
 	{
@@ -450,32 +452,33 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 		// case 1 wont appear, because doSimplex will always be called after atleast 2 points had been added to the simplex list
 	case 1:
 	{
-		direction = -A;
+		direction = -A.v;
 		return false;
 	} // Case 1
 
 	  // Simplex is a line (AB)
 	case 2:
 	{
-		glm::vec3& B = simplex[0];
+		//glm::vec3& B = simplex[0];
+		SupportPoint& B = simplex[0];
 		//DBG_ASSERT(A != B);
-		if (A == B)
+		if (A.v == B.v)
 		{
 			simplex.pop_back();
 			direction *= -1.0f;
 			return false;
 		}
-		glm::vec3& AB = B - A;
+		glm::vec3& AB = B.v - A.v;
 
-		if (glm::dot(AB, -A) > 0)
+		if (glm::dot(AB, -A.v) > 0)
 		{
 			// is between A and B
-			direction = glm::cross(glm::cross(AB, -A), AB);
+			direction = glm::cross(glm::cross(AB, -A.v), AB);
 		}
 		else
 		{
 			// is behind A
-			direction = -A;
+			direction = -A.v;
 		}
 		return false;
 	} // Case 2
@@ -483,105 +486,112 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 	  // Simplex is a triangle (ABC)
 	case 3:
 	{
-	case3:
-		glm::vec3& B = simplex[1];
-		glm::vec3& C = simplex[0];
-		glm::vec3 AB = B - A;
-		glm::vec3 AC = C - A;
+		/*glm::vec3& B = simplex[1];
+		glm::vec3& C = simplex[0];*/
+		SupportPoint& B = simplex[1];
+		SupportPoint& C = simplex[0];
+		glm::vec3 AB = B.v - A.v;
+		glm::vec3 AC = C.v - A.v;
 
-		DBG_ASSERT(A != B);
-		DBG_ASSERT(A != C);
-		DBG_ASSERT(B != C);
+		DBG_ASSERT(A.v != B.v);
+		DBG_ASSERT(A.v != C.v);
+		DBG_ASSERT(B.v != C.v);
 
 		// cross-product / normal of the triangle ABC
 		glm::vec3 n = glm::cross(AB, AC);
 
-		if (glm::dot(glm::cross(n, AC), -A) > 0)
+		if (glm::dot(glm::cross(n, AC), -A.v) > 0)
 		{
-			if (glm::dot(AC, -A) > 0)
+			if (glm::dot(AC, -A.v) > 0)
 			{
-				direction = glm::cross(glm::cross(AC, -A), AC);
+				direction = glm::cross(glm::cross(AC, -A.v), AC);
 				return false;
 			}
 
 			else
 			{
 #pragma region star
-				if (glm::dot(B - A, -A) > 0)
+				if (glm::dot(AB, -A.v) > 0)
 				{
-					direction = glm::cross(glm::cross(AB, -A), AB);
+					direction = glm::cross(glm::cross(AB, -A.v), AB);
 				}
 				else
 				{
-					direction = -A;
+					direction = -A.v;
 				}
 #pragma endregion
 			}
 		}
 		else
 		{
-			if (glm::dot(glm::cross(AB, n), -A) > 0)
+			if (glm::dot(glm::cross(AB, n), -A.v) > 0)
 			{
 #pragma region star
-				if (glm::dot(AB, -A) > 0)
+				if (glm::dot(AB, -A.v) > 0)
 				{
-					direction = glm::cross(glm::cross(AB, -A), AB);
+					direction = glm::cross(glm::cross(AB, -A.v), AB);
 					return false;
 				}
 
 				else
 				{
-					direction = -A;
+					direction = -A.v;
 				}
 #pragma endregion
 			}
 			else
 			{
 				// above triangle
-				if (glm::dot(n, -A) > 0)
+				if (glm::dot(n, -A.v) > 0)
 				{
-					direction = -n; // vorzeichen geändert
+					direction = n; // vorzeichen geändert
 					return false;
 				}
 				// under triangle
 				else
 				{
-					direction = n; // vorzeichen geändert
+					direction = -n; // vorzeichen geändert
 					return false;
 				}
 			}
 		}
+		__debugbreak();
 	} // Case 3
 
-	  //// Simplex is a tetrahedron (ABCD)
+	  // Simplex is a tetrahedron (ABCD)
 	case 4:
 	{
 		// Points of simples
 		//glm::vec3& A = simplex[3]; already know it, dunno why no compile error
-		glm::vec3& B = simplex[2];
+		/*glm::vec3& B = simplex[2];
 		glm::vec3& C = simplex[1];
-		glm::vec3& D = simplex[0];
+		glm::vec3& D = simplex[0];*/
 
-		DBG_ASSERT(A != B);
-		DBG_ASSERT(A != C);
-		DBG_ASSERT(A != D);
-		DBG_ASSERT(B != C);
-		DBG_ASSERT(B != D);
-		DBG_ASSERT(C != D);
+		SupportPoint& B = simplex[2];
+		SupportPoint& C = simplex[1];
+		SupportPoint& D = simplex[0];
+
+		DBG_ASSERT(A.v != B.v);
+		DBG_ASSERT(A.v != C.v);
+		DBG_ASSERT(A.v != D.v);
+		DBG_ASSERT(B.v != C.v);
+		DBG_ASSERT(B.v != D.v);
+		DBG_ASSERT(C.v != D.v);
 
 		// Line segments
-		glm::vec3 AB = B - A;
-		glm::vec3 AC = C - A;
-		glm::vec3 AD = D - A;
+		glm::vec3 AB = B.v - A.v;
+		glm::vec3 AC = C.v - A.v;
+		glm::vec3 AD = D.v - A.v;
 
 		// Normals of triangles
 		glm::vec3 nABC = glm::cross(AB, AC);
 		glm::vec3 nABD = glm::cross(AD, AB);
 		glm::vec3 nACD = glm::cross(AC, AD);
 		// probably unnecessary
-		glm::vec3 nBCD = glm::cross(C - B, D - B);
+		glm::vec3 nBCD = glm::cross(C.v - B.v, D.v - B.v);
 
 
+		// Cheking if all points lay on a single plane
 		nBCD = glm::normalize(nBCD);
 		nABC = glm::normalize(nABC);
 		float length = glm::length(nBCD - nABC);
@@ -604,32 +614,33 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 
 		// check if origin is inside simplex
 		// ABC
-		float dot = glm::dot(nABC, -A);
-		dot = glm::dot(nABD, -A);
-		dot = glm::dot(nACD, -A);
-		if (glm::dot(nABC, -A) < 0)
+		float dot = glm::dot(nABC, -A.v);
+		dot = glm::dot(nABD, -A.v);
+		dot = glm::dot(nACD, -A.v);
+		if (glm::dot(nABC, -A.v) < 0)
 		{
 			// ABD
-			dot = glm::dot(nABD, -A);
-			if (glm::dot(nABD, -A) < 0)
+			dot = glm::dot(nABD, -A.v);
+			if (glm::dot(nABD, -A.v) < 0)
 			{
 				// ACD
-				dot = glm::dot(nACD, -A);
-				if (glm::dot(nACD, -A) < 0)
+				dot = glm::dot(nACD, -A.v);
+				if (glm::dot(nACD, -A.v) < 0)
 				{
 					return true;
-					////BCD
-					//if (glm::dot(nBCD, -B) > 0)
-					//{
-					//	return true;
-					//}
+					//BCD
+					/*dot = glm::dot(nBCD, -B.v);
+					if (glm::dot(nBCD, -B.v) < 0)
+					{
+						return true;
+					}*/
 				}
 			}
 		}
 
 		// ABC
-		dot = glm::dot(nABC, -A);
-		if (glm::dot(nABC, -A) > 0)
+		dot = glm::dot(nABC, -A.v);
+		if (glm::dot(nABC, -A.v) > 0)
 		{
 			simplex[0] = C;
 			simplex[1] = B;
@@ -641,8 +652,8 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 		}
 
 		// ABD
-		dot = glm::dot(nABD, -A);
-		if (glm::dot(nABD, -A) > 0)
+		dot = glm::dot(nABD, -A.v);
+		if (glm::dot(nABD, -A.v) > 0)
 		{
 			simplex[0] = B;
 			simplex[1] = D; // because counter clockwise
@@ -653,8 +664,8 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 		}
 
 		// ACD
-		dot = glm::dot(nACD, -A);
-		if (glm::dot(nACD, -A) > 0)
+		dot = glm::dot(nACD, -A.v);
+		if (glm::dot(nACD, -A.v) > 0)
 		{
 			simplex[0] = D;
 			simplex[1] = C;
@@ -665,12 +676,13 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 		}
 
 		// BCD
-		dot = glm::dot(nBCD, -A);
-		if (glm::dot(nBCD, -A) > 0)
+		dot = glm::dot(nBCD, -A.v);
+		if (glm::dot(nBCD, -A.v) > 0)
 		{
 			__debugbreak();
 		}
 
+		__debugbreak();
 		direction = { 0.0f, 0.0f, 0.0f };
 		return false;
 		break;
@@ -680,6 +692,124 @@ bool PhysicsManager::doSimplex(std::vector<glm::vec3>& simplex, glm::vec3& direc
 	  //DBG_ASSERT(direction != tmpDirection);
 	return false;
 }
+
+// Maintaining list of all open edges; kann lambda funktion draus machen
+void addEdge(const SupportPoint& A, const SupportPoint& B, std::list<Edge>& edges)
+{
+	for (auto it = edges.begin(); it != edges.end(); it++)
+	{
+		if (it->A.v == B.v && it->B.v == A.v)
+		{
+			edges.erase(it);
+			return;
+		}
+	}
+	edges.emplace_back(A, B);
+}
+
+void barycentric(const glm::vec3& p, const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float* u, float* v, float* w)
+{
+	glm::vec3 v0 = b - a;
+	glm::vec3 v1 = c - a;
+	glm::vec3 v2 = p - a;
+	float d00 = glm::dot(v0, v0);
+	float d01 = glm::dot(v0, v1);
+	float d11 = glm::dot(v1, v1);
+	float d20 = glm::dot(v2, v0);
+	float d21 = glm::dot(v2, v1);
+	float denom = d00 * d11 - d01 * d01;
+	*v = (d11 * d20 - d01 * d21) / denom;
+	*w = (d00 * d21 - d01 * d20) / denom;
+	*u = 1.0f - *v - *w;
+}
+
+void PhysicsManager::generateContactData(std::vector<SupportPoint>& simplex, const std::vector<glm::vec3>& A, const std::vector<glm::vec3>& B)
+{
+	DBG_ASSERT(simplex.size() == 4);
+
+	// List of all triangles of the polytope
+	std::list<Triangle> triangles;
+	// List of all edges froming a hole when a triangle is removed
+	std::list<Edge> edges;
+
+	triangles.emplace_back(simplex[3], simplex[2], simplex[1]);
+	triangles.emplace_back(simplex[3], simplex[1], simplex[0]);
+	triangles.emplace_back(simplex[3], simplex[0], simplex[2]);
+	triangles.emplace_back(simplex[2], simplex[0], simplex[1]);
+
+	float minDot;
+	Triangle closest = Triangle(SupportPoint(), SupportPoint(), SupportPoint());
+#pragma region Find closest trianlge
+	while (true)
+	{
+		minDot = std::numeric_limits<float>().max();
+		closest = Triangle(SupportPoint(), SupportPoint(), SupportPoint());
+		// Searching closest triangle to the origin
+		// Project vector a (a to origin) onto the normal to get the lenght
+		for (auto it = triangles.begin(); it != triangles.end(); it++)
+		{
+			float dot = abs(glm::dot(it->normal, it->A.v));
+			DBG_ASSERT(dot != 0.0f);
+			if (dot < minDot)
+			{
+				minDot = dot;
+				closest = *it;
+			}
+		}
+
+		// Searching the furthes point along triangles negative nomral (=> point lays in bounds on minkowski sum, negative bc positive points towards center of shape)
+		SupportPoint a;
+		a.A = support(-closest.normal, A);
+		a.B = support(closest.normal, B);
+		a.v = a.A - a.B;
+
+		for (auto it = triangles.begin(); it != triangles.end(); it++)
+		{
+			if (it->A.v == a.v || it->B.v == a.v || it->C.v == a.v) {
+				//minDot = abs(glm::dot(closest.normal, a.v));
+				goto generate_contact_data; // Closest triangle had been found
+			}
+				
+		}
+
+		// Searching for triangles to be removed
+		for (auto it = triangles.begin(); it != triangles.end();)
+		{
+			if (glm::dot(it->normal, a.v - it->A.v) > 0)
+			{
+				addEdge(it->A, it->B, edges);
+				addEdge(it->B, it->C, edges);
+				addEdge(it->C, it->A, edges);
+				it = triangles.erase(it);
+			}else
+				it++;
+		}
+
+		// Create new triangle(s) with new point
+		for (auto it = edges.begin(); it != edges.end(); it++)
+		{
+			triangles.emplace_back(a, it->A, it->B);
+		}
+	}
+#pragma endregion
+
+#pragma region Generate contact data
+		generate_contact_data :
+		float bary_u, bary_v, bary_w;
+		barycentric(closest.normal, closest.A.v, closest.B.v, closest.C.v, &bary_u, &bary_v, &bary_w);
+
+		// collision point onobject in world space
+		glm::vec3 collisionPoint((bary_u * closest.A.A) + (bary_v * closest.B.A) + bary_w * closest.C.A);
+
+		// collision normal
+		glm::vec3 collisionNormal = -closest.normal;
+
+		// penetration depth
+		float penetrationDepth = minDot;		
+#pragma endregion
+}
+
+
 
 bool PhysicsManager::minkowskiSum(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
 {
@@ -692,30 +822,24 @@ bool PhysicsManager::minkowskiSum(const Collision::MeshCollider& col1, const Col
 	{
 		for (size_t j = 0; j < v2.size(); j++)
 		{
-			bool b = false;
-			glm::vec3 tmp = v1[i] - v2[j];
-			for (size_t k = 0; k < v3.size(); k++)
-			{
-				if (tmp == v3[k])
-				{
-					b = true;
-					break;
-				}
-
-			}
-			if (!b)
-				v3.push_back(v1[i] - v2[j]);
+			//glm::vec3 tmp = v1[i] - v2[j];
+			v3.push_back(v1[i] - v2[j]);
 		}
 	}
 
-	// checking if new shape contains the origin (0,0,0)
-
-
+	
+	glColor4f(0.0f, 0.0f, 1.0f, 0.5f);
+	glBegin(GL_POLYGON);
+	for (size_t i = 0; i < v3.size(); i++)
+	{
+		glm::vec3 v = v3[i];
+		glVertex3f(v.x, v.y, v.z);
+	}
+	glEnd();
 	return false;
 }
 
 #pragma endregion
-
 
 void PhysicsManager::collisionResponse(RigidBody& g1, RigidBody& g2)
 {

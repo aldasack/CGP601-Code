@@ -64,6 +64,9 @@ void MeshCollider::AdjustCollider(std::vector<glm::vec3>& vertices)
 	{
 		m_pWorldVertices->push_back(m_pLocalVertices->operator[](i));
 	}
+
+	// Apply transformation
+	Update();
 }
 
 std::vector<glm::vec3>& MeshCollider::GetVertices() const

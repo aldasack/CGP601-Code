@@ -62,6 +62,9 @@ void SphereCollider::AdjustCollider()
 			maxDistance = distance;
 	}
 	m_radius = maxDistance;
+	
+	// Applying translation and scale
+	Update();
 }
 
 void SphereCollider::SetCenter(const glm::vec3& center)

@@ -89,6 +89,7 @@ namespace Collision
 	class SphereCollider;
 	class BoxCollider;
 	class MeshCollider;
+	class ContactData;
 }
 
 namespace Colors
