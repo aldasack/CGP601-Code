@@ -20,10 +20,8 @@ GameManager* GameManager::s_instance = nullptr;
 
 GameManager::GameManager()
 {
-	m_exitCode = EXIT_SUCCESS;
 	m_isRunning = true;
 	m_isRendering = true;
-	m_isExiting = false;
 	m_deltaTime = 0.0f;
 	m_targetFrameTime = (1.0f / 60.0f);
 
@@ -102,12 +100,12 @@ void GameManager::InitScene()
 	srand(static_cast<unsigned>(time(0)));
 	glm::vec3 pos1;
 	pos1.x = 0.0f;
-	pos1.y = -0.5f;
-	pos1.z = 0.0f;
+	pos1.y = 1.5f;
+	pos1.z = 0.5f;
 
 	glm::vec3 pos2;
 	pos2.x = 0.0f;
-	pos2.y = 1.5f;
+	pos2.y = -0.5f;
 	pos2.z = 0.0;
 
 	m_gameObjects.push_back(new Plane(glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -117,11 +115,12 @@ void GameManager::InitScene()
 	//m_gameObjects.push_back(new Sphere(pos1));
 	m_gameObjects.push_back(new Box(pos1));
 	m_gameObjects[1]->SetColor(Colors::Blue);
-	m_gameObjects[1]->UseGravity(false);
+	m_gameObjects[1]->UseGravity(true);
 	m_gameObjects.push_back(new Box(pos2));
 	m_gameObjects[2]->SetColor(Colors::White);
 	m_gameObjects[2]->UseGravity(true);
-	//m_gameObjects[1]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
+	//m_gameObjects[1]->SetRotation(glm::vec3(Constants::Deg2Rad * 45.0f, Constants::Deg2Rad * 45.0f, 0.0f));
+	//m_gameObjects[1]->AddTorque(glm::vec3(0.0f, 10.0f, 0.0f));
 	//m_gameObjects[2]->SetRotation(glm::vec3(0.0f, Constants::Deg2Rad * 45.0f, 0.0f));
 
 	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -1.0f));
@@ -182,7 +181,7 @@ void GameManager::KeyboardHandle(unsigned char key, int x, int y)
 
 void GameManager::Exit(int exitCode)
 {
-	m_exitCode = exitCode;
+	//m_exitCode = exitCode;
 }
 
 void GameManager::AddRigidBody(RigidBody& rigidbody)

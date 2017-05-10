@@ -14,7 +14,7 @@
 #include "SphereCollider.h"
 #include "MeshCollider.h"
 #include "BoxCollider.h"
-#include "ContactData.h"
+//#include "ContactData.h"
 
 PhysicsManager* PhysicsManager::s_instance = nullptr;
 
@@ -42,13 +42,16 @@ void PhysicsManager::Update(float deltaTime)
 {
 	DBG_ASSERT(deltaTime > 0.0f);
 
-	// collision loop. This loop checks for collision
 	for (size_t i = 0; i < m_rigidBodies.size(); i++)
 	{
 		// Updating the rigidbodys
 		// TODO: unsure weather using 'm_targetFrameTime' or 'deltaTime'
 		m_rigidBodies[i]->Update(m_targetFrameTime);
+	}
 
+	// collision loop. This loop checks for collision
+	for (size_t i = 0; i < m_rigidBodies.size(); i++)
+	{
 		for (size_t j = 0; j < m_rigidBodies.size(); j++)
 		{
 			/*******************************************************************************/
@@ -64,9 +67,30 @@ void PhysicsManager::Update(float deltaTime)
 				{
 					if (boxIntersects(m_rigidBodies[i]->GetBoxCollider(), m_rigidBodies[j]->GetBoxCollider()))
 					{
-						if (meshIntersects(m_rigidBodies[i]->GetMeshCollider(), m_rigidBodies[j]->GetMeshCollider()))
+						Collision::ContactData contact;
+						if (meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact))
 						{
-							collisionResponse(*m_rigidBodies[i], *m_rigidBodies[j]);
+							//jiggling object to get more contact points for more precise collision response
+							
+							glm::quat rot = m_rigidBodies[i]->GetEulerRotation();
+							// Rotation on x-axis
+							m_rigidBodies[i]->Rotate(glm::vec3(0.1f * Constants::Deg2Rad, 0.0f, 0.0f));
+							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							collisionResponse(contact);
+
+							// Rotation on y-axis
+							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.1f * Constants::Deg2Rad, 0.0f));
+							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							collisionResponse(contact);
+
+							// Rotation on z-axis
+							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, 0.1f * Constants::Deg2Rad));
+							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							collisionResponse(contact);
+							
+							m_rigidBodies[i]->SetQuaterionRotation(rot);
+
+							collisionResponse(contact);
 						}
 					}
 				}
@@ -106,6 +130,7 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 	glm::vec3& col1Extent = col1.GetExtents();
 	glm::vec3& col2Extent = col2.GetExtents();
 
+	
 	// 1. Axis: col1 x (0) against col2 x, y & z
 	for (int i = 0; i < 3; i++)
 	{
@@ -363,10 +388,11 @@ bool PhysicsManager::boxIntersects(const Collision::BoxCollider& col1, const Col
 }
 
 #pragma region GJK
-bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
+//bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2, Collision::ContactData& contact)
+bool PhysicsManager::meshIntersects(RigidBody& rb1, RigidBody& rb2, Collision::ContactData& contact)
 {
-	std::vector<glm::vec3>& A = col1.GetVertices();
-	std::vector<glm::vec3>& B = col2.GetVertices();
+	std::vector<glm::vec3>& A = rb1.GetMeshCollider().GetVertices();
+	std::vector<glm::vec3>& B = rb2.GetMeshCollider().GetVertices();
 
 	DBG_ASSERT(A.size() != 0);
 	DBG_ASSERT(B.size() != 0);
@@ -399,7 +425,9 @@ bool PhysicsManager::meshIntersects(const Collision::MeshCollider& col1, const C
 			DBG_ASSERT(simplex.size() <= 4);
 			if (doSimplex(simplex, direction))
 			{
-				generateContactData(simplex, A, B);
+				contact.m_bodies[0] = &rb1;
+				contact.m_bodies[1] = &rb2;
+				generateContactData(simplex, A, B, contact);
 				return true;
 			}
 			else
@@ -449,7 +477,7 @@ bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& di
 	switch (size)
 	{
 		// Simpex is a point (A)
-		// case 1 wont appear, because doSimplex will always be called after atleast 2 points had been added to the simplex list
+		// case 1 will not appear, because doSimplex will always be called after atleast 2 points had been added to the simplex list
 	case 1:
 	{
 		direction = -A.v;
@@ -459,9 +487,8 @@ bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& di
 	  // Simplex is a line (AB)
 	case 2:
 	{
-		//glm::vec3& B = simplex[0];
 		SupportPoint& B = simplex[0];
-		//DBG_ASSERT(A != B);
+
 		if (A.v == B.v)
 		{
 			simplex.pop_back();
@@ -486,8 +513,6 @@ bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& di
 	  // Simplex is a triangle (ABC)
 	case 3:
 	{
-		/*glm::vec3& B = simplex[1];
-		glm::vec3& C = simplex[0];*/
 		SupportPoint& B = simplex[1];
 		SupportPoint& C = simplex[0];
 		glm::vec3 AB = B.v - A.v;
@@ -567,9 +592,9 @@ bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& di
 		glm::vec3& C = simplex[1];
 		glm::vec3& D = simplex[0];*/
 
-		SupportPoint& B = simplex[2];
-		SupportPoint& C = simplex[1];
-		SupportPoint& D = simplex[0];
+		SupportPoint B = simplex[2];
+		SupportPoint C = simplex[1];
+		SupportPoint D = simplex[0];
 
 		DBG_ASSERT(A.v != B.v);
 		DBG_ASSERT(A.v != C.v);
@@ -628,12 +653,6 @@ bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& di
 				if (glm::dot(nACD, -A.v) < 0)
 				{
 					return true;
-					//BCD
-					/*dot = glm::dot(nBCD, -B.v);
-					if (glm::dot(nBCD, -B.v) < 0)
-					{
-						return true;
-					}*/
 				}
 			}
 		}
@@ -693,7 +712,7 @@ bool PhysicsManager::doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& di
 	return false;
 }
 
-// Maintaining list of all open edges; kann lambda funktion draus machen
+// Maintaining list of all open edges.
 void addEdge(const SupportPoint& A, const SupportPoint& B, std::list<Edge>& edges)
 {
 	for (auto it = edges.begin(); it != edges.end(); it++)
@@ -723,7 +742,7 @@ void barycentric(const glm::vec3& p, const glm::vec3& a, const glm::vec3& b, con
 	*u = 1.0f - *v - *w;
 }
 
-void PhysicsManager::generateContactData(std::vector<SupportPoint>& simplex, const std::vector<glm::vec3>& A, const std::vector<glm::vec3>& B)
+void PhysicsManager::generateContactData(std::vector<SupportPoint>& simplex, const std::vector<glm::vec3>& A, const std::vector<glm::vec3>& B, Collision::ContactData& contact)
 {
 	DBG_ASSERT(simplex.size() == 4);
 
@@ -765,8 +784,8 @@ void PhysicsManager::generateContactData(std::vector<SupportPoint>& simplex, con
 
 		for (auto it = triangles.begin(); it != triangles.end(); it++)
 		{
-			if (it->A.v == a.v || it->B.v == a.v || it->C.v == a.v) {
-				//minDot = abs(glm::dot(closest.normal, a.v));
+			if (it->A.v == a.v || it->B.v == a.v || it->C.v == a.v) 
+			{
 				goto generate_contact_data; // Closest triangle had been found
 			}
 				
@@ -794,22 +813,20 @@ void PhysicsManager::generateContactData(std::vector<SupportPoint>& simplex, con
 #pragma endregion
 
 #pragma region Generate contact data
-		generate_contact_data :
+	generate_contact_data :
 		float bary_u, bary_v, bary_w;
 		barycentric(closest.normal, closest.A.v, closest.B.v, closest.C.v, &bary_u, &bary_v, &bary_w);
 
 		// collision point onobject in world space
-		glm::vec3 collisionPoint((bary_u * closest.A.A) + (bary_v * closest.B.A) + bary_w * closest.C.A);
+		contact.m_contactPoint = glm::vec3((bary_u * closest.A.A) + (bary_v * closest.B.A) + bary_w * closest.C.A);
 
 		// collision normal
-		glm::vec3 collisionNormal = -closest.normal;
+		contact.m_contactNormal = -closest.normal;
 
 		// penetration depth
-		float penetrationDepth = minDot;		
+		contact.m_penetration = minDot;
 #pragma endregion
 }
-
-
 
 bool PhysicsManager::minkowskiSum(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
 {
@@ -838,45 +855,112 @@ bool PhysicsManager::minkowskiSum(const Collision::MeshCollider& col1, const Col
 	glEnd();
 	return false;
 }
-
 #pragma endregion
 
-void PhysicsManager::collisionResponse(RigidBody& g1, RigidBody& g2)
+void PhysicsManager::collisionResponse(const Collision:: ContactData& contact)
 {
-	glm::vec3 v1 = g1.GetVelocity();
-	glm::vec3 v2 = g2.GetVelocity();
-	float m1 = g1.GetMass();
-	float m2 = g2.GetMass();
-	float im1 = 1 / m1; // inverse mass
-	float im2 = 1 / m2;
-	glm::vec3 pos1 = g1.GetPosition();
-	glm::vec3 pos2 = g2.GetPosition();
+	RigidBody& rb1 = *contact.m_bodies[0];
+	RigidBody& rb2 = *contact.m_bodies[1];
 
+	
+	glm::vec3& v1 = rb1.GetVelocity();
+	glm::vec3& v2 = rb2.GetVelocity();
+	glm::vec3& w1 = rb1.GetAngularVelocity();
+	glm::vec3& w2 = rb1.GetAngularVelocity();
+	
+	float im1 = rb1.GetInverseMass(); // inverse mass
+	float im2 = rb2.GetInverseMass(); // inverse mass
+	glm::vec3& pos1 = rb1.GetPosition();
+	glm::vec3& pos2 = rb2.GetPosition();
+	glm::mat3& I1 = rb1.GetInertiaTensor();
+	glm::mat3& I2 = rb2.GetInertiaTensor();
 
-	glm::vec3 collisionNormal = glm::normalize(pos1 - pos2);
+	/*
+	//glm::vec3 collisionNormal = glm::normalize(pos1 - pos2);
 
 	// checking if collision response is needed
 	// if objects move towards each other
-	glm::vec3 relativeVelocity = v1 - v2;
-	float separatingVelocity = glm::dot(relativeVelocity, collisionNormal);
-	if (separatingVelocity > 0.0f)
+	//glm::vec3 relativeVelocity = v1 - v2;
+	//float separatingVelocity = glm::dot(relativeVelocity, collisionNormal);
+	//if (separatingVelocity > 0.0f)
+	//	return;
+
+	//// involve bounciness / restitution
+	//float newSeparatingVelocity = -separatingVelocity * 1.0f;
+	//float deltaVelocity = newSeparatingVelocity - separatingVelocity;
+	*/
+	
+#pragma region Linear impuls
+	// Checking if collision response is needed,
+	// If objects move towards each other.
+	glm::vec3 relativeVelcotiy = v2 - v1;
+	float closingVelocity = glm::dot(relativeVelcotiy, contact.m_contactNormal);
+	if (closingVelocity <= 0.0f)
 		return;
+	
+	// Applying factor of bounciness. In this case 100% => perfectly elastic collision
+	float restitution = 1.0f;
+	float deltaVelocity = closingVelocity + closingVelocity * restitution;
 
-	// making velocity positive
-	//separatingVelocity *= -1.0f;
-
-	// involve bounciness / restitution
-	float newSeparatingVelocity = -separatingVelocity * 1.0f;
-	float deltaVelocity = newSeparatingVelocity - separatingVelocity;
-
-	// calculating the impuls (p). p = m * v
-	//float p = (m1 + m2) * separatingVelocity;
+	// Calculating the impuls magnitude (p). p = m * v
 	float p = deltaVelocity / (im1 + im2);
 
-	// involving the collision normal
-	glm::vec3 pv = p * collisionNormal;
+	// Calculating the impuls direction with the collision normal, calculating the impulse vector
+	glm::vec3 j = p * contact.m_contactNormal;
 
-	// set new velocity / apply impulse to objects
-	g1.SetVelocity(v1 + pv * im1);
-	g2.SetVelocity(v2 + pv * -im2);
+	// Set new velocity / apply impulse to objects
+	rb1.SetVelocity(v1 + j * im1);
+	rb2.SetVelocity(v2 + j * -im2);
+
+	// Push objects apart in relation to thier velocity
+	float speed1 = glm::length(v1);
+	float speed2 = glm::length(v2);
+	glm::vec3 direction1 = glm::normalize(v1);
+	glm::vec3 direction2 = glm::normalize(v2);
+#pragma endregion
+
+#pragma region Angular Impuls
+
+	// calculate new rotation speed of the contact point and translating it into an angular velocity (rad/s)
+	// Calculate distance from contact point and centre of mass.
+	glm::vec3 r1 = contact.m_contactPoint - rb1.GetCentreOfMass();
+	//glm::vec3 av1 = j * I1 * glm::cross(r1, contact.m_contactNormal);
+	glm::vec3 av1 = glm::inverse(I1) * glm::cross(r1, j);
+	rb1.SetAngularVelocity(w1 + av1);
+
+	glm::vec3 r2 = contact.m_contactPoint - rb2.GetCentreOfMass();
+	//glm::vec3 av2 = j * I2 * glm::cross(r2, contact.m_contactNormal);
+	glm::vec3 av2 = glm::inverse(I2) * glm::cross(r2, -j);
+	rb2.SetAngularVelocity(w2 + av2);
+
+#pragma endregion
+
+	
+	//glm::vec3 relativeVelcotiy = v2 - v1;
+	//float closingVelocity = glm::dot(relativeVelcotiy, contact.m_contactNormal);
+	//if (closingVelocity <= 0.0f)
+	//	return;
+
+	//// Applying factor of bounciness. In this case 100% => perfectly elastic collision
+	//float restitution = 1.0f;
+	//float deltaVelocity = closingVelocity + closingVelocity * restitution;
+
+	//glm::vec3 r1 = contact.m_contactPoint - rb1.GetCentreOfMass();
+	//glm::vec3 r2 = contact.m_contactPoint - rb2.GetCentreOfMass();
+
+	//float j = glm::dot(relativeVelcotiy, contact.m_contactNormal) / (im1 + im2 + glm::dot(glm::cross((1.0f / I1) * glm::cross(r1, contact.m_contactNormal), r1) + glm::cross((1.0f / I2) * glm::cross(r2, contact.m_contactNormal), r2), contact.m_contactNormal));
+	//
+	//rb1.SetVelocity(v1 + j * im1);
+	//rb1.SetVelocity(v2 + j * im2);
+
+
+#pragma region Resolving penetration depth
+	/*float s = contact.m_penetration / speed1 + speed2;
+	if (isinf(s))
+		return;
+	if(!isnan(direction1.x))
+		rb1.SetPosition(pos1 + speed1 * s * direction1);
+	if (!isnan(direction2.x))
+		rb2.SetPosition(pos2 + speed2 * s * direction2);*/
+#pragma endregion
 }

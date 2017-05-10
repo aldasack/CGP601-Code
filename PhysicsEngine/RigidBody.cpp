@@ -47,6 +47,7 @@ RigidBody::RigidBody(GameObject& gameObject)
 	m_torque.z = 0.0f;
 
 	m_mass = 1.0f;
+	m_inverseMass = 1.0f / m_mass;
 
 	m_centreOfMass.x = 0.0f;
 	m_centreOfMass.y = 0.0f;
@@ -93,32 +94,23 @@ void RigidBody::Update(float dt)
 
 #pragma region Linear Movement
 	// 1. Step: Calculate acceleration (a). a = F/m
-	m_acceleration.x = m_force.x / m_mass;
-	m_acceleration.y = m_force.y / m_mass;
-	m_acceleration.z = m_force.z / m_mass;
+	m_acceleration = m_force / m_mass;
+	
 	if (m_useGravity)
 	{
-		// adding acceleration of gravity. Because this acceleration is constant, it is unecessary to calculate the Force first
+		// Adding acceleration of gravity. Because this acceleration is constant, it is unecessary to calculate the Force first
 		m_acceleration.y += Constants::G * -1.0f; // acceleration goes down on the y-axis and needs to be negative.
 	}
 
 	// 2. Step: Calculate velocity (v) at this moment. v = a * t
-	m_velocity.x += m_acceleration.x * dt;
-	m_velocity.y += m_acceleration.y * dt;
-	m_velocity.z += m_acceleration.z * dt;
+	m_velocity += m_acceleration * dt;
 	//if (m_velocity.y <= 0.000001f && m_velocity.y >= -0.000001f) m_velocity.y = 0.0f;
 
 	// 3. Step: Calcuate travelled distance (s) on each axis during the time step. s = v * t
-	glm::vec3 s;
-	s.x = m_velocity.x * dt;
-	s.y = m_velocity.y * dt;
-	s.z = m_velocity.z * dt;
+	glm::vec3 s = m_velocity * dt;
 
 	// 4. Step: Adding resulting distances to the position.
-	m_position.x += s.x;
-	m_position.y += s.y;
-	m_position.z += s.z;
-
+	m_position += s;
 
 	if (m_position.y <= -0.5f) // -1.0 is the height of the plane, radius is 0.5m
 	{
@@ -130,7 +122,7 @@ void RigidBody::Update(float dt)
 
 #pragma region Angular Movement
 	// 1. Step: Calculate acceleration (a). a = M/I
-	m_angularAcceleration = m_inverseInertiaTensor * m_torque; // multiplication because of inverted tensor
+	m_angularAcceleration = m_inverseInertiaTensor * m_torque; // multiplication because of inverted tensor; interia  tensor needs to be rotated
 
 	// 2. Step: Calculate velocity (v) at this moment. v = a * t
 	m_angularVelocity += m_angularAcceleration * dt;
@@ -193,6 +185,16 @@ void RigidBody::SetVelocity(const glm::vec3& velocity)
 	m_velocity = velocity;
 }
 
+glm::vec3 RigidBody::GetAngularVelocity() const
+{
+	return m_angularVelocity;
+}
+
+void RigidBody::SetAngularVelocity(const glm::vec3& velocity)
+{
+	m_angularVelocity = velocity;
+}
+
 float RigidBody::GetMass() const
 {
 	DBG_ASSERT(m_mass > 0.0f);
@@ -210,7 +212,17 @@ void RigidBody::SetMass(const float mass)
 	DBG_ASSERT(mass > 0.0f);
 
 	m_mass = mass;
-	m_inverseMass = 1 / mass;
+	m_inverseMass = 1.0f / mass;
+}
+
+glm::vec3 RigidBody::GetCentreOfMass() const
+{
+	return m_position + m_centreOfMass;
+}
+
+void RigidBody::SetCentreOfMass(const glm::vec3& centre)
+{
+	m_centreOfMass = centre;
 }
 
 bool RigidBody::IsStatic() const
@@ -284,6 +296,16 @@ void RigidBody::SetEulerRotation(const glm::vec3& rotation)
 	DBG_ASSERT(abs(length - 1.0f) < Constants::Precision);
 }
 
+void RigidBody::SetQuaterionRotation(const glm::quat& rotation)
+{
+	m_rotation = glm::normalize(rotation);
+}
+
+glm::mat3 RigidBody::GetInertiaTensor() const
+{
+	return m_inertiaTensor;
+}
+
 void RigidBody::SetInertiaTensor(const glm::mat3& tensor)
 {
 	m_inertiaTensor = tensor;
@@ -304,8 +326,8 @@ void RigidBody::AddForce(const glm::vec3& force, const glm::vec3& position)
 	m_force.y += force.y;
 	m_force.z += force.z;
 
-	// Calculating distance from centre of mass 
-	glm::vec3 distance = position - m_centreOfMass;
+	// Calculating distance from centre of mass to applied point
+	glm::vec3 distance = position - (m_position - m_centreOfMass);
 	// Calculating resulting torque
 	glm::vec3 torque = glm::cross(distance, force);
 	// Adding torque

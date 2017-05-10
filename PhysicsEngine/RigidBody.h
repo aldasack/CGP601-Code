@@ -27,10 +27,16 @@ public:
 
 	glm::vec3 GetVelocity() const;
 	void SetVelocity(const glm::vec3& velocity);
+
+	glm::vec3 GetAngularVelocity() const;
+	void SetAngularVelocity(const glm::vec3& velocity);
 	
 	float GetMass() const;
 	float GetInverseMass() const;
 	void SetMass(const float mass);
+	// Returns centre of mass in world coordinates.
+	glm::vec3 GetCentreOfMass() const;
+	void SetCentreOfMass(const glm::vec3& centre);
 
 	bool IsStatic() const;
 	void IsStatic(const bool isStatic);
@@ -45,6 +51,8 @@ public:
 	glm::quat GetQuaternionRotation() const;
 	// Rotation is represented as euler angles in radians
 	void SetEulerRotation(const glm::vec3& rotation);
+	void SetQuaterionRotation(const glm::quat& rotation);
+	glm::mat3 GetInertiaTensor() const;
 	// Setting the Inertia Tensor
 	void SetInertiaTensor(const glm::mat3& tensor);
 
@@ -80,6 +88,7 @@ private:
 	float m_mass;
 	// Inverse mass is needed for collision response calculations
 	float m_inverseMass;
+	// centre of mass in local coordinates
 	glm::vec3 m_centreOfMass;
 	// 
 	float m_bounciness;

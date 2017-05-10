@@ -4,6 +4,9 @@
 // Date: 06/02/2017			  //
 ////////////////////////////////
 
+
+// TODO:
+// mehtoden namen convention, klein oder groﬂ
 #pragma once
 
 #ifndef _DEFS_H
@@ -21,7 +24,7 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\quaternion.hpp"
 
-// all angles are represented in radians
+// all angles in glm are represented in radians
 #define GLM_FORCE_RADIANS
 
 // Basic assert function to do some checking - if the check is violate
@@ -38,16 +41,10 @@ namespace Constants
 	const float Precision = 0.0001f;
 }
 
-//namespace Time
-//{
-//	// Time since application start, currently not working
-//	float TotalTime = 0.0f;
-//}
-
 namespace Math
 {
 	// Rotates vector by euler angles in radians
-	static glm::vec3& rotateVector(const glm::vec3& vector, const glm::vec3& eulerAngles)
+	static glm::vec3& RotateVector(const glm::vec3& vector, const glm::vec3& eulerAngles)
 	{
 		// not implemented
 		DBG_ASSERT(false);
@@ -55,7 +52,7 @@ namespace Math
 	}
 
 	// Rotates vector by normalized quaternion
-	static glm::vec3 rotateVector(const glm::vec3& vector, const glm::quat& quat)
+	static glm::vec3 RotateVector(const glm::vec3& vector, const glm::quat& quat)
 	{
 		// check if quaternion is normalized
 		float length = glm::length(quat);
@@ -77,28 +74,24 @@ namespace Math
 
 		return result;
 	}
+
+	// Suqared length
+	//static void 
+
+	// Predefined vector values
+	namespace vec3
+	{
+		const glm::vec3 Zero{ 0.0f, 0.0f, 0.0f };
+		const glm::vec3 Up{ 0.0f, 1.0f, 0.0f };
+		const glm::vec3 Down{ 0.0f, -1.0f, 0.0f };
+		const glm::vec3 Left{ -1.0f, 0.0f, 0.0f };
+		const glm::vec3 Right{ 1.0f, 0.0f, 0.0f };
+		const glm::vec3 Forward{ 0.0f, 0.0f, -1.0f };
+		const glm::vec3 Backward{ 0.0f, 0.0f, -1.0f };
+	}
 }
 
 //TODO: methods calculating inertia tensor for different shapes
-
-namespace Collision
-{
-	enum class ColliderType { Sphere, Box, Plane, Mesh, None };
-
-	class Collider;
-	class SphereCollider;
-	class BoxCollider;
-	class MeshCollider;
-	class ContactData;
-}
-
-namespace Colors
-{
-	const glm::vec3 White = { 1.0f, 1.0f, 1.0f };
-	const glm::vec3 Black = { 0.0f, 0.0f, 0.0f };
-	const glm::vec3 Red = { 1.0f, 0.0f, 0.0f };
-	const glm::vec3 Blue = { 0.0f, 0.0f, 1.0f };
-}
 
 class RigidBody;
 class GameManager;
@@ -108,5 +101,29 @@ class Sphere;
 class Box;
 class Plane;
 
+namespace Collision
+{
+	class Collider;
+	class SphereCollider;
+	class BoxCollider;
+	class MeshCollider;
+	//class ContactData;
+
+	struct ContactData
+	{
+		RigidBody* m_bodies[2];
+		glm::vec3 m_contactNormal;
+		glm::vec3 m_contactPoint;
+		float m_penetration;
+	};
+}
+
+namespace Colors
+{
+	const glm::vec3 White = { 1.0f, 1.0f, 1.0f };
+	const glm::vec3 Black = { 0.0f, 0.0f, 0.0f };
+	const glm::vec3 Red = { 1.0f, 0.0f, 0.0f };
+	const glm::vec3 Blue = { 0.0f, 0.0f, 1.0f };
+}
 
 #endif // !_DEFS_H

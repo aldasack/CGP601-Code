@@ -40,10 +40,8 @@ private:
 	const unsigned int m_windowHeight = 768;
 	const unsigned int m_windowWidth = 1024;
 	
-	int m_exitCode;
 	bool m_isRunning;
 	bool m_isRendering;
-	bool m_isExiting;
 	bool m_keyState[256];
 	float m_deltaTime;
 	float m_targetFrameTime;

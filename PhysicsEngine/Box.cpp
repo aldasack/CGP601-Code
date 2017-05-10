@@ -20,6 +20,15 @@ Box::Box() : GameObject()
 	m_pRigidbody->GetSphereCollider().AdjustCollider(); //SetRadius(sqrt(3) / 2); // d = sqrt(3) * a; r = d / 2 => sqrt(3) / 2; a = 1
 	m_pRigidbody->GetBoxCollider().AdjustCollider();
 	m_pRigidbody->GetMeshCollider().AdjustCollider(m_vertices);
+
+	// Adjust rigid body settings
+	m_pRigidbody->SetCentreOfMass(glm::vec3(0.0f, 0.5f, 0.0f));
+	glm::mat3 inertiaTensor;
+	glm::vec3& scale = GetScale();
+	inertiaTensor[0][0] = 1 / 12 * GetMass() * (scale.y * scale.y + scale.z * scale.z);
+	inertiaTensor[1][1] = 1 / 12 * GetMass() * (scale.x * scale.x + scale.z * scale.z);
+	inertiaTensor[2][2] = 1 / 12 * GetMass() * (scale.x * scale.x + scale.y * scale.y);
+	m_pRigidbody->SetInertiaTensor(inertiaTensor);
 }
 
 Box::Box(const glm::vec3& position) : GameObject(position)
@@ -29,6 +38,15 @@ Box::Box(const glm::vec3& position) : GameObject(position)
 	m_pRigidbody->GetSphereCollider().AdjustCollider(); //SetRadius(sqrt(3) / 2); // d = sqrt(3) * a; r = d / 2 => sqrt(3) / 2; a = 1
 	m_pRigidbody->GetBoxCollider().AdjustCollider();
 	m_pRigidbody->GetMeshCollider().AdjustCollider(m_vertices);
+
+	// Adjust rigid body settings
+	m_pRigidbody->SetCentreOfMass(glm::vec3(0.0f, 0.5f, 0.0f));
+	glm::mat3 inertiaTensor;
+	glm::vec3& scale = GetScale();
+	/*inertiaTensor[0][0] = 1 / 12 * GetMass() * (scale.y * scale.y + scale.z * scale.z);
+	inertiaTensor[1][1] = 1 / 12 * GetMass() * (scale.x * scale.x + scale.z * scale.z);
+	inertiaTensor[2][2] = 1 / 12 * GetMass() * (scale.x * scale.x + scale.y * scale.y);*/
+	m_pRigidbody->SetInertiaTensor(inertiaTensor);
 }
 
 Box::~Box(){}

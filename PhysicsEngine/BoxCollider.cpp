@@ -10,8 +10,9 @@
 
 using namespace Collision;
 
-BoxCollider::BoxCollider(RigidBody& rigidbody/*, const glm::vec3& scale*/) : Collider(rigidbody)
+BoxCollider::BoxCollider(RigidBody& rigidbody) : Collider(rigidbody)
 {
+	// Setting default parameters for a 1m^3 cube at the origin
 	m_center = m_pRigidBody->GetPosition();
 	m_offset = { 0.0f, 0.0f, 0.0f };
 	m_extent = { 0.5f, 0.5f, 0.5f };
@@ -24,19 +25,19 @@ BoxCollider::~BoxCollider(){}
 
 void BoxCollider::Update()
 {
-	// Translating the box collider.
-	m_center = m_pRigidBody->GetPosition();
+	// Translating the box collider and adding the offset.
+	m_center = m_pRigidBody->GetPosition() + m_offset;
 
 	// Rotating the box collider / rotating the axis
 	glm::quat m_rotation = m_pRigidBody->GetQuaternionRotation();
 	// x axis (1,0,0)
-	m_axes[0] = Math::rotateVector(glm::vec3(1.0f, 0.0f, 0.0f), m_rotation);
+	m_axes[0] = Math::RotateVector(glm::vec3(1.0f, 0.0f, 0.0f), m_rotation);
 	m_axes[0] = glm::normalize(m_axes[0]);
 	// y axis (0,1,0)
-	m_axes[1] = Math::rotateVector(glm::vec3(0.0f, 1.0f, 0.0f), m_rotation);
+	m_axes[1] = Math::RotateVector(glm::vec3(0.0f, 1.0f, 0.0f), m_rotation);
 	m_axes[1] = glm::normalize(m_axes[1]);
 	// z axis (0,0,1)
-	m_axes[2] = Math::rotateVector(glm::vec3(0.0f, 0.0f, 1.0f), m_rotation);
+	m_axes[2] = Math::RotateVector(glm::vec3(0.0f, 0.0f, 1.0f), m_rotation);
 	m_axes[2] = glm::normalize(m_axes[2]);
 
 	// Scaling the box collider / scaling the extends

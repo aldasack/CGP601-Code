@@ -60,13 +60,15 @@ private:
 	PhysicsManager();
 	bool spheresIntersect(const Collision::SphereCollider &col1, const Collision::SphereCollider &col2);
 	bool boxIntersects(const Collision::BoxCollider& col1, const Collision::BoxCollider& col2);
-	bool meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2);
+	// contact is a out parameter
+	bool meshIntersects(RigidBody& rb1, RigidBody& rb2, Collision::ContactData& contact);
+	//bool meshIntersects(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2, Collision::ContactData& contact);
 	glm::vec3 support(const glm::vec3& direction, const std::vector<glm::vec3>& points);
 	// generates the new direction
 	bool doSimplex(std::vector<SupportPoint>& simplex, glm::vec3& direction);
-	void generateContactData(std::vector<SupportPoint>& simplex, const std::vector<glm::vec3>& A, const std::vector<glm::vec3>& B);
+	void generateContactData(std::vector<SupportPoint>& simplex, const std::vector<glm::vec3>& A, const std::vector<glm::vec3>& B, Collision::ContactData& contact);
 	bool minkowskiSum(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2);
-	void collisionResponse(RigidBody& g1, RigidBody& g2);
+	void collisionResponse(const Collision::ContactData& contact);
 
 	static PhysicsManager* s_instance;
 };

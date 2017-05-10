@@ -41,7 +41,7 @@ void MeshCollider::Update()
 		// Scale
 		m_pWorldVertices->operator[](i) *= m_pRigidBody->GetGameObject().GetScale();
 		// Rotate
-		m_pWorldVertices->operator[](i) = Math::rotateVector(m_pWorldVertices->operator[](i), m_pRigidBody->GetQuaternionRotation());
+		m_pWorldVertices->operator[](i) = Math::RotateVector(m_pWorldVertices->operator[](i), m_pRigidBody->GetQuaternionRotation());
 		// Translate
 		m_pWorldVertices->operator[](i) += m_pRigidBody->GetPosition();
 	}
