@@ -19,6 +19,12 @@
 class GameManager
 {
 public:
+	
+	/*
+	*	Singleton implementation.
+	*	Retruns instance of the GameManger.
+	*	If the instance is nullptr, a new GameManager is created
+	*/
 	static GameManager& GetInstance()
 	{
 		if (!s_instance)
@@ -27,18 +33,28 @@ public:
 		return *s_instance;
 	}
 	~GameManager();
+	/*
+	*	Destructor replacement.
+	*/
 	void Shutdown();
+	/*
+	*	Main loop. Calls draw and update of objects.
+	*	Creates a fixed fps.
+	*/
 	void Loop();
+	/*
+	*	Initializes the scene  with all gameobjects
+	*/
 	void InitScene();
+	/*
+	*	Recives Keyboard input and saves it.
+	*/
 	void KeyboardHandle(unsigned char key, int x, int y);
-	//int Run();
-	void Exit(int);
-
-	void AddRigidBody(RigidBody& rigidbody);
 
 private:
-	const unsigned int m_windowHeight = 768;
-	const unsigned int m_windowWidth = 1024;
+	const unsigned int m_windowHeight = 1080;
+	const unsigned int m_windowWidth = 1920;
+
 	
 	bool m_isRunning;
 	bool m_isRendering;
@@ -49,13 +65,12 @@ private:
 	std::chrono::high_resolution_clock g_timer;
 	using ms = std::chrono::duration<float, std::milli>;
 	
+	// times to create a fixed time step and calculate current fps.
 	std::chrono::time_point<std::chrono::steady_clock> oldTime;
 	std::chrono::time_point<std::chrono::steady_clock> newTime;
 	std::chrono::time_point<std::chrono::steady_clock> loopOldTime;
 	std::chrono::time_point<std::chrono::steady_clock> loopNewTime;
 
-	// stores all RigidBodys to update them
-	std::vector<RigidBody*> m_rigidBodys;
 	// stores all GameObjects to draw them
 	std::vector<GameObject*> m_gameObjects;
 	PhysicsManager* m_pPhysicsManager;

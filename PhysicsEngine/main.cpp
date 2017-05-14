@@ -9,8 +9,8 @@
 #include "GameManager.h"
 
 GameManager* gameManager;
-unsigned int windowHeight = 768;
-unsigned int windowWidth = 1024;
+unsigned int windowHeight = 1080;
+unsigned int windowWidth = 1920;
 
 void Display()
 {

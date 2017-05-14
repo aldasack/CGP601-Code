@@ -9,7 +9,6 @@
 #ifndef _RIGIDBODY_H
 #define _RIGIDBODY_H
 
-
 #include "Defs.h"
 
 class RigidBody
@@ -90,10 +89,7 @@ private:
 	float m_inverseMass;
 	// centre of mass in local coordinates
 	glm::vec3 m_centreOfMass;
-	// 
-	float m_bounciness;
 	
-	// description needed
 	glm::mat3x3 m_inertiaTensor;
 	glm::mat3x3 m_inverseInertiaTensor;
 

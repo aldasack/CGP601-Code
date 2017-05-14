@@ -24,7 +24,6 @@ namespace Collision
 		void AdjustCollider();
 		void SetCenter(const glm::vec3& center);
 		glm::vec3 GetCenter() const;
-		// should be assigned by collider itself
 		void SetRadius(const float radius);
 		float GetRadius() const;
 	

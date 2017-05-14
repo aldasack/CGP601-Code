@@ -1,10 +1,10 @@
-#pragma once
-
 ////////////////////////////////
 // Name: Box.h			      //
 // Author: Alexander Kocourek //
 // Date: 27/03/2017			  //
 ////////////////////////////////
+
+#pragma once
 
 #ifndef _BOX_H
 #define _BOX_H
@@ -17,13 +17,24 @@ class Box :
 {
 public:
 	Box();
+	/*
+	*	Constructor positioning Box at 'position'.
+	*/
 	Box(const glm::vec3& position);
 	~Box();
+	/*
+	*	Destructor replacement.
+	*/
 	void Shutdown() override;
+	/*
+	*	Draws Box in the scene.
+	*/
 	void Draw() override;
 
 private:
-	// fills the vertices list with vectors which represent a box
+	/*
+	*	Fills the vertices list with vectors, which represent a box.
+	*/
 	void setVertices();
 };
 

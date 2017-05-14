@@ -51,9 +51,6 @@
     <ClCompile Include="Collider.cpp">
       <Filter>Quelldateien\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="ContactData.cpp">
-      <Filter>Quelldateien\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="RigidBody.cpp">
       <Filter>Quelldateien\Physics</Filter>
     </ClCompile>
@@ -90,9 +87,6 @@
       <Filter>Headerdateien\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Collider.h">
-      <Filter>Headerdateien\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="ContactData.h">
       <Filter>Headerdateien\Physics</Filter>
     </ClInclude>
     <ClInclude Include="SphereCollider.h">

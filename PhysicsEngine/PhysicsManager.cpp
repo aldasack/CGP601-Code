@@ -57,8 +57,8 @@ void PhysicsManager::Update(float deltaTime)
 			/*******************************************************************************/
 			// TODO: Fix this hacky code
 			// gameObjects[0] is the plane, and the plane has no collider yet
-			if (i == 0 || j == 0)
-				continue;
+			//if (i == 0 || j == 0)
+//				continue;
 			/*******************************************************************************/
 			//if (&m_rigidBodies[i] != &m_rigidBodies[j])
 			if(i != j)
@@ -74,17 +74,39 @@ void PhysicsManager::Update(float deltaTime)
 							
 							glm::quat rot = m_rigidBodies[i]->GetEulerRotation();
 							// Rotation on x-axis
-							m_rigidBodies[i]->Rotate(glm::vec3(0.1f * Constants::Deg2Rad, 0.0f, 0.0f));
+							m_rigidBodies[i]->Rotate(glm::vec3(1.0f * Constants::Deg2Rad, 0.0f, 0.0f));
 							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
 							collisionResponse(contact);
+
+							m_rigidBodies[i]->SetQuaterionRotation(rot);
+
+							m_rigidBodies[i]->Rotate(glm::vec3(-1.0f * Constants::Deg2Rad, 0.0f, 0.0f));
+							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							collisionResponse(contact);
+
+							m_rigidBodies[i]->SetQuaterionRotation(rot);
 
 							// Rotation on y-axis
-							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.1f * Constants::Deg2Rad, 0.0f));
+							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 1.0f * Constants::Deg2Rad, 0.0f));
+							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							collisionResponse(contact);
+							
+							m_rigidBodies[i]->SetQuaterionRotation(rot);
+
+							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, -1.0f * Constants::Deg2Rad, 0.0f));
 							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
 							collisionResponse(contact);
 
+							m_rigidBodies[i]->SetQuaterionRotation(rot);
+
 							// Rotation on z-axis
-							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, 0.1f * Constants::Deg2Rad));
+							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, 1.0f * Constants::Deg2Rad));
+							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							collisionResponse(contact);
+
+							m_rigidBodies[i]->SetQuaterionRotation(rot);
+
+							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, -1.0f * Constants::Deg2Rad));
 							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
 							collisionResponse(contact);
 							
@@ -827,42 +849,19 @@ void PhysicsManager::generateContactData(std::vector<SupportPoint>& simplex, con
 		contact.m_penetration = minDot;
 #pragma endregion
 }
-
-bool PhysicsManager::minkowskiSum(const Collision::MeshCollider& col1, const Collision::MeshCollider& col2)
-{
-	std::vector<glm::vec3>& v1 = col1.GetVertices();
-	std::vector<glm::vec3>& v2 = col2.GetVertices();
-	std::vector<glm::vec3> v3;
-
-	// subtracting each point (minkowskik difference)
-	for (size_t i = 0; i < v1.size(); i++)
-	{
-		for (size_t j = 0; j < v2.size(); j++)
-		{
-			//glm::vec3 tmp = v1[i] - v2[j];
-			v3.push_back(v1[i] - v2[j]);
-		}
-	}
-
-	
-	glColor4f(0.0f, 0.0f, 1.0f, 0.5f);
-	glBegin(GL_POLYGON);
-	for (size_t i = 0; i < v3.size(); i++)
-	{
-		glm::vec3 v = v3[i];
-		glVertex3f(v.x, v.y, v.z);
-	}
-	glEnd();
-	return false;
-}
 #pragma endregion
 
 void PhysicsManager::collisionResponse(const Collision:: ContactData& contact)
 {
 	RigidBody& rb1 = *contact.m_bodies[0];
 	RigidBody& rb2 = *contact.m_bodies[1];
-
 	
+	// Both objects are static and do not react to any forces or impusles.
+	// No need for further calculation, because they will have no affect on the objects.
+	// Just resolve the interpenetration.
+	if (rb1.IsStatic() && rb2.IsStatic())
+		goto interpenetration;
+
 	glm::vec3& v1 = rb1.GetVelocity();
 	glm::vec3& v2 = rb2.GetVelocity();
 	glm::vec3& w1 = rb1.GetAngularVelocity();
@@ -899,7 +898,7 @@ void PhysicsManager::collisionResponse(const Collision:: ContactData& contact)
 		return;
 	
 	// Applying factor of bounciness. In this case 100% => perfectly elastic collision
-	float restitution = 1.0f;
+	float restitution = 0.0f;
 	float deltaVelocity = closingVelocity + closingVelocity * restitution;
 
 	// Calculating the impuls magnitude (p). p = m * v
@@ -935,7 +934,6 @@ void PhysicsManager::collisionResponse(const Collision:: ContactData& contact)
 
 #pragma endregion
 
-	
 	//glm::vec3 relativeVelcotiy = v2 - v1;
 	//float closingVelocity = glm::dot(relativeVelcotiy, contact.m_contactNormal);
 	//if (closingVelocity <= 0.0f)
@@ -954,7 +952,17 @@ void PhysicsManager::collisionResponse(const Collision:: ContactData& contact)
 	//rb1.SetVelocity(v2 + j * im2);
 
 
-#pragma region Resolving penetration depth
+#pragma region Interpenetration
+	interpenetration:
+
+	if (contact.m_penetration > 0.0f)
+	{
+		glm::vec3 s = contact.m_contactNormal * (contact.m_penetration / (im1 + im2));
+
+		rb1.SetPosition(pos1 + s * im1);
+		rb2.SetPosition(pos2 + s * -im2);
+	}
+	
 	/*float s = contact.m_penetration / speed1 + speed2;
 	if (isinf(s))
 		return;

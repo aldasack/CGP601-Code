@@ -232,6 +232,11 @@ bool RigidBody::IsStatic() const
 
 void RigidBody::IsStatic(const bool isStatic)
 {
+	// setting mass to "infinity" for collision response
+	if (isStatic)
+		m_inverseMass = 0.0f;
+	else
+		m_inverseMass = 1.0f / m_mass;
 	m_isStatic = isStatic;
 }
 

@@ -34,23 +34,20 @@
 
 namespace Constants
 {
+	// Value for gravity = 9.81 m/s^2.
 	const float G = 9.81f;
+	// Precalculated value for pi.
 	const float Pi = 4.0f * atan(1.0f);
+	// Factor to convert degree to radians.
 	const float Deg2Rad = Pi / 180.0f;
+	// Factor to convert radians to degree.
 	const float Rad2Deg = 180.0f / Pi;
+	// Precision value for precision tests.
 	const float Precision = 0.0001f;
 }
 
 namespace Math
 {
-	// Rotates vector by euler angles in radians
-	static glm::vec3& RotateVector(const glm::vec3& vector, const glm::vec3& eulerAngles)
-	{
-		// not implemented
-		DBG_ASSERT(false);
-		return glm::vec3();
-	}
-
 	// Rotates vector by normalized quaternion
 	static glm::vec3 RotateVector(const glm::vec3& vector, const glm::quat& quat)
 	{
@@ -75,10 +72,7 @@ namespace Math
 		return result;
 	}
 
-	// Suqared length
-	//static void 
-
-	// Predefined vector values
+	// Predefined vector values.
 	namespace vec3
 	{
 		const glm::vec3 Zero{ 0.0f, 0.0f, 0.0f };
@@ -107,8 +101,8 @@ namespace Collision
 	class SphereCollider;
 	class BoxCollider;
 	class MeshCollider;
-	//class ContactData;
 
+	// Represents a contact between two objects.
 	struct ContactData
 	{
 		RigidBody* m_bodies[2];
@@ -118,6 +112,7 @@ namespace Collision
 	};
 }
 
+// Vectors representing colors.
 namespace Colors
 {
 	const glm::vec3 White = { 1.0f, 1.0f, 1.0f };

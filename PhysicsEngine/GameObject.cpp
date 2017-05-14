@@ -28,11 +28,6 @@ GameObject::GameObject(glm::vec3 position, glm::vec3 rotation) : GameObject()
 
 GameObject::~GameObject(){}
 
-void GameObject::Update(float dt)
-{
-	m_pRigidbody->Update(dt);
-}
-
 void GameObject::SetPosition(const glm::vec3& position)
 {
 	m_pRigidbody->SetPosition(position);
