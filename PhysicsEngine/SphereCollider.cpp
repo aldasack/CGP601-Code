@@ -30,7 +30,6 @@ void SphereCollider::Update()
 	if (scale.z > factor)
 		factor = scale.z;
 	m_radius *= factor;
-	
 }
 
 void SphereCollider::AdjustCollider()

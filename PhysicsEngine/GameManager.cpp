@@ -86,7 +86,7 @@ void GameManager::InitScene()
 {
 	srand(static_cast<unsigned>(time(0)));
 	glm::vec3 pos1;
-	pos1.x = 0.3f;
+	pos1.x = 0.0f;
 	pos1.y = -0.0f;
 	pos1.z = 5.0f;
 
@@ -95,33 +95,38 @@ void GameManager::InitScene()
 	pos2.y = -0.0f;
 	pos2.z = 0.0;
 
-	m_gameObjects.push_back(new Plane(glm::vec3(0.0f, -1.0f, 0.0f)));
+	/*m_gameObjects.push_back(new Plane(glm::vec3(0.0f, -1.0f, 0.0f)));
+	m_gameObjects[0]->SetColor(glm::vec3(0.5f, 0.5f, 0.5f));
+	m_gameObjects[0]->SetScale(glm::vec3(100.0f, 1.0f, 100.0f));
+	m_gameObjects[0]->IsStatic(true);*/
+
+	m_gameObjects.push_back(new Box(glm::vec3(0.0f, -2.0f, 0.0f)));
 	m_gameObjects[0]->SetColor(glm::vec3(0.5f, 0.5f, 0.5f));
 	m_gameObjects[0]->SetScale(glm::vec3(100.0f, 1.0f, 100.0f));
 	m_gameObjects[0]->IsStatic(true);
 	
-
-	m_gameObjects[0]->UseGravity(false);
 	m_gameObjects.push_back(new Box(pos1));
-	m_gameObjects[1]->SetColor(Colors::Blue);
-	m_gameObjects[1]->UseGravity(true);
+	m_gameObjects[1]->SetColor(Colors::Blue);	
+	//m_gameObjects[1]->SetRotation(glm::vec3(Constants::Deg2Rad * 45.0f, Constants::Deg2Rad * 45.0f, 0.0f));
+	//m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -3.0f));
+
+	/*
 	m_gameObjects.push_back(new Box(pos2));
 	m_gameObjects[2]->SetColor(Colors::White);
 	m_gameObjects[2]->UseGravity(true);
-	m_gameObjects[1]->SetRotation(glm::vec3(Constants::Deg2Rad * 45.0f, Constants::Deg2Rad * 45.0f, 0.0f));
-	m_gameObjects[1]->SetVelocity(glm::vec3(0.0f, 0.0f, -3.0f));
+	*/
 
-	glm::vec3 color;
-	for (int i = 0; i < 5; i++)
-	{
-		pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-		pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
-		color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-		color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-		color.z = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
-		m_gameObjects.push_back(new Box(pos2));
-		m_gameObjects[i + 3]->SetColor(color);
-	}
+	//glm::vec3 color;
+	//for (int i = 0; i < 5; i++)
+	//{
+	//	pos2.x = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
+	//	pos2.z = -10.0f + static_cast<float>(rand()) / (static_cast<float> (RAND_MAX / 10.0f - -10.0f));
+	//	color.x = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+	//	color.y = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+	//	color.z = static_cast<float>(rand()) / static_cast<float> (RAND_MAX);
+	//	m_gameObjects.push_back(new Box(pos2));
+	//	m_gameObjects[i + 3]->SetColor(color);
+	//}
 }
 
 void GameManager::KeyboardHandle(unsigned char key, int x, int y)
@@ -183,8 +188,8 @@ void GameManager::draw()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	// looking from above
-	gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-	//gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
+	//gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
 	
 	if (m_isRendering)
 	{

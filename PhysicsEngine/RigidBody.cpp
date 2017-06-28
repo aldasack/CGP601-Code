@@ -80,63 +80,63 @@ RigidBody::~RigidBody(){}
 void RigidBody::Update(float dt)
 {
 	// if object is static
-	if (m_isStatic)
-		return;
-
-	/*
-	*	a : Acceleration
-	*	M : Torque
-	*	I : Moment of Inertia
-	*	F : Force
-	*	v : Velocity
-	*	m : Mass
-	*/
+	if (!m_isStatic)
+	{
+		/*
+		*	a : Acceleration
+		*	M : Torque
+		*	I : Moment of Inertia
+		*	F : Force
+		*	v : Velocity
+		*	m : Mass
+		*/
 
 #pragma region Linear Movement
-	// 1. Step: Calculate acceleration (a). a = F/m
-	m_acceleration = m_force / m_mass;
-	
-	if (m_useGravity)
-	{
-		// Adding acceleration of gravity. Because this acceleration is constant, it is unecessary to calculate the Force first
-		m_acceleration.y += Constants::G * -1.0f; // acceleration goes down on the y-axis and needs to be negative.
-	}
+		// 1. Step: Calculate acceleration (a). a = F/m
+		m_acceleration = m_force / m_mass;
 
-	// 2. Step: Calculate velocity (v) at this moment. v = a * t
-	m_velocity += m_acceleration * dt;
-	//if (m_velocity.y <= 0.000001f && m_velocity.y >= -0.000001f) m_velocity.y = 0.0f;
+		if (m_useGravity)
+		{
+			// Adding acceleration of gravity. Because this acceleration is constant, it is unecessary to calculate the Force first
+			m_acceleration.y += Constants::G * -1.0f; // acceleration goes down on the y-axis and needs to be negative.
+		}
 
-	// 3. Step: Calcuate travelled distance (s) on each axis during the time step. s = v * t
-	glm::vec3 s = m_velocity * dt;
+		// 2. Step: Calculate velocity (v) at this moment. v = a * t
+		m_velocity += m_acceleration * dt;
+		//if (m_velocity.y <= 0.000001f && m_velocity.y >= -0.000001f) m_velocity.y = 0.0f;
 
-	// 4. Step: Adding resulting distances to the position.
-	m_position += s;
+		// 3. Step: Calcuate travelled distance (s) on each axis during the time step. s = v * t
+		glm::vec3 s = m_velocity * dt;
 
-	if (m_position.y <= -0.5f) // -1.0 is the height of the plane, radius is 0.5m
-	{
-		m_velocity.y *= -1.0f; // reverse velocity on collision, no energy is lost and is completly accelerating the object
-		m_position.y = -0.5; // pushing sphere out of the ground
-	}
+		// 4. Step: Adding resulting distances to the position.
+		m_position += s;
+
+		//if (m_position.y <= -0.5f) // -1.0 is the height of the plane, radius is 0.5m
+		//{
+		//	m_velocity.y *= -1.0f; // reverse velocity on collision, no energy is lost and is completly accelerating the object
+		//	m_position.y = -0.5; // pushing sphere out of the ground
+		//}
 
 #pragma endregion
 
 #pragma region Angular Movement
-	// 1. Step: Calculate acceleration (a). a = M/I
-	m_angularAcceleration = m_inverseInertiaTensor * m_torque; // multiplication because of inverted tensor; interia  tensor needs to be rotated
+		// 1. Step: Calculate acceleration (a). a = M/I
+		m_angularAcceleration = m_inverseInertiaTensor * m_torque; // multiplication because of inverted tensor; interia  tensor needs to be rotated
 
-	// 2. Step: Calculate velocity (v) at this moment. v = a * t
-	m_angularVelocity += m_angularAcceleration * dt;
+																   // 2. Step: Calculate velocity (v) at this moment. v = a * t
+		m_angularVelocity += m_angularAcceleration * dt;
 
-	// 3. Step: Calcuate travelled distance / angle (s) on each axis during the time step. s = v * t
-	glm::vec3 rotation = m_angularVelocity * dt;
+		// 3. Step: Calcuate travelled distance / angle (s) on each axis during the time step. s = v * t
+		glm::vec3 rotation = m_angularVelocity * dt;
 
-	// 4. Adding resulting rotation to objects rotation / orientation
-	Rotate(rotation);
+		// 4. Adding resulting rotation to objects rotation / orientation
+		Rotate(rotation);
 
 #pragma endregion
 
-	resetAccumulators();
-
+		resetAccumulators();
+	}
+		
 	// Updating Colliders to transform them the same way as the rigidbody
 	m_pSphereCollider->Update();
 	m_pBoxCollider->Update();
