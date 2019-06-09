@@ -1,5 +1,5 @@
 ////////////////////////////////
-// Name: PhysicsManager.h     //
+// Name: PhysicsManager.cpp   //
 // Author: Alexander Kocourek //
 // Date: 06/02/2017			  //
 ////////////////////////////////
@@ -73,45 +73,45 @@ void PhysicsManager::Update(float deltaTime)
 							
 							glm::quat rot = m_rigidBodies[i]->GetEulerRotation();
 							// Rotation on x-axis
-							m_rigidBodies[i]->Rotate(glm::vec3(1.0f * Constants::Deg2Rad, 0.0f, 0.0f));
+							//m_rigidBodies[i]->Rotate(glm::vec3(1.0f * Constants::Deg2Rad, 0.0f, 0.0f));
 							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
 							collisionResponse(contact);
 
-							m_rigidBodies[i]->SetQuaterionRotation(rot);
+							//m_rigidBodies[i]->SetQuaterionRotation(rot);
 
-							m_rigidBodies[i]->Rotate(glm::vec3(-1.0f * Constants::Deg2Rad, 0.0f, 0.0f));
-							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
-							collisionResponse(contact);
+							//m_rigidBodies[i]->Rotate(glm::vec3(-1.0f * Constants::Deg2Rad, 0.0f, 0.0f));
+							//meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							//collisionResponse(contact);
 
-							m_rigidBodies[i]->SetQuaterionRotation(rot);
+							//m_rigidBodies[i]->SetQuaterionRotation(rot);
 
-							// Rotation on y-axis
-							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 1.0f * Constants::Deg2Rad, 0.0f));
-							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
-							collisionResponse(contact);
-							
-							m_rigidBodies[i]->SetQuaterionRotation(rot);
+							//// Rotation on y-axis
+							//m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 1.0f * Constants::Deg2Rad, 0.0f));
+							//meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							//collisionResponse(contact);
+							//
+							//m_rigidBodies[i]->SetQuaterionRotation(rot);
 
-							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, -1.0f * Constants::Deg2Rad, 0.0f));
-							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
-							collisionResponse(contact);
+							//m_rigidBodies[i]->Rotate(glm::vec3(0.0f, -1.0f * Constants::Deg2Rad, 0.0f));
+							//meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							//collisionResponse(contact);
 
-							m_rigidBodies[i]->SetQuaterionRotation(rot);
+							//m_rigidBodies[i]->SetQuaterionRotation(rot);
 
-							// Rotation on z-axis
-							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, 1.0f * Constants::Deg2Rad));
-							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
-							collisionResponse(contact);
+							//// Rotation on z-axis
+							//m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, 1.0f * Constants::Deg2Rad));
+							//meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							//collisionResponse(contact);
 
-							m_rigidBodies[i]->SetQuaterionRotation(rot);
+							//m_rigidBodies[i]->SetQuaterionRotation(rot);
 
-							m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, -1.0f * Constants::Deg2Rad));
-							meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
-							collisionResponse(contact);
-							
-							m_rigidBodies[i]->SetQuaterionRotation(rot);
+							//m_rigidBodies[i]->Rotate(glm::vec3(0.0f, 0.0f, -1.0f * Constants::Deg2Rad));
+							//meshIntersects(*m_rigidBodies[i], *m_rigidBodies[j], contact);
+							//collisionResponse(contact);
+							//
+							//m_rigidBodies[i]->SetQuaterionRotation(rot);
 
-							collisionResponse(contact);
+							//collisionResponse(contact);
 						}
 					}
 				}

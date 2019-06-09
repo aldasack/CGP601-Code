@@ -188,8 +188,8 @@ void GameManager::draw()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	// looking from above
-	//gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-	gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
+	gluLookAt(0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	//gluLookAt(5.0, 2.5, 0.0, 0.0, 2.5, 0.0, 0.0, 1.0, 0.0);
 	
 	if (m_isRendering)
 	{
